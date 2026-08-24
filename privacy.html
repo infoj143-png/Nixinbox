@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Nixinbox</title>
+    <meta name="description" content="Privacy Policy for Nixinbox temporary email service. Learn how we handle privacy, data retention, and Google AdSense compliance cookies.">
+    <link rel="canonical" href="https://nixinbox.vercel.app/privacy.html">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-blue-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2 text-xl font-black text-white tracking-tight">
+                <span class="text-blue-500">Nix</span>inbox
+            </a>
+            <nav class="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-300">
+                <a href="/" class="hover:text-blue-400 transition">Home</a>
+                <a href="/blog.html" class="hover:text-blue-400 transition">Blog</a>
+                <a href="/about.html" class="hover:text-blue-400 transition">About Us</a>
+                <a href="/contact.html" class="hover:text-blue-400 transition">Contact Us</a>
+            </nav>
+            <div class="sm:hidden flex items-center">
+                <button id="mobileMenuBtn" class="text-slate-300 hover:text-white focus:outline-none" aria-label="Toggle Menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Dropdown -->
+        <div id="mobileMenu" class="hidden sm:hidden border-t border-slate-900 bg-slate-950 px-4 py-3 space-y-2 text-sm text-slate-300">
+            <a href="/" class="block hover:text-blue-400 py-1">Home</a>
+            <a href="/blog.html" class="block hover:text-blue-400 py-1">Blog</a>
+            <a href="/about.html" class="block hover:text-blue-400 py-1">About Us</a>
+            <a href="/contact.html" class="block hover:text-blue-400 py-1">Contact Us</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-12 flex-grow">
+        <article class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl space-y-8">
+            <header class="border-b border-slate-800 pb-6">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">Privacy Policy</h1>
+                <p class="text-slate-400 text-sm">Last updated: May 2024</p>
+            </header>
+
+            <section class="space-y-4 text-slate-300 leading-relaxed text-sm sm:text-base">
+                <h2 class="text-xl font-bold text-white">1. Overview & Service Purpose</h2>
+                <p>At Nixinbox (<a href="https://nixinbox.vercel.app" class="text-blue-400 underline">nixinbox.vercel.app</a>), protecting your privacy is our core operational principle. As a free, disposable email and temporary inbox utility service, Nixinbox enables users to receive temporary messages without registering personal details, revealing real email addresses, or providing personally identifiable information (PII).</p>
+
+                <h2 class="text-xl font-bold text-white">2. Information Collection and Storage</h2>
+                <p>Nixinbox operates with a strict minimal-data approach:</p>
+                <ul class="list-disc list-inside space-y-2 pl-2 text-slate-300">
+                    <li><strong class="text-slate-200">No Personal Account Registration:</strong> We do not require your real name, identity, phone number, or persistent primary email to generate temporary email addresses.</li>
+                    <li><strong class="text-slate-200">Temporary Inboxes:</strong> Temporary email addresses, authorization tokens, and active inbox configurations generated on Nixinbox are stored locally on your device via browser local storage (`localStorage`) so your inbox session remains active while you navigate the site.</li>
+                    <li><strong class="text-slate-200">Automated Data Expiration:</strong> Emails sent to disposable addresses are automatically deleted and permanently removed from our backend provider systems after a brief retention window. We do not maintain permanent historical backups of user messages.</li>
+                </ul>
+
+                <h2 class="text-xl font-bold text-white">3. Cookies and Advertising Partners</h2>
+                <p>Nixinbox utilizes standard web technologies, including cookies and log files, to ensure site security, analyze aggregated traffic trends, and deliver relevant advertisements.</p>
+
+                <h3 class="text-lg font-semibold text-slate-200">Google AdSense & Third-Party Cookies</h3>
+                <p>Third-party vendors, including Google, use cookies to serve ads based on a user's prior visits to Nixinbox or other websites on the internet:</p>
+                <ul class="list-disc list-inside space-y-2 pl-2 text-slate-300">
+                    <li>Google's use of advertising cookies enables it and its partners to serve ads to users based on their visit to our site and/or other sites on the Internet.</li>
+                    <li>Users may opt out of personalized advertising by visiting <a href="https://www.google.com/settings/ads" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline">Google Ads Settings</a>. Alternatively, users can opt out of third-party vendor's use of cookies for personalized advertising by visiting <a href="https://www.aboutads.info/choices/" target="_blank" rel="noopener noreferrer" class="text-blue-400 underline">aboutads.info</a>.</li>
+                </ul>
+
+                <h2 class="text-xl font-bold text-white">4. Log Files & Analytics</h2>
+                <p>Like most standard web application servers, Nixinbox records general non-identifying server log information. This may include internet protocol (IP) addresses, browser type, internet service provider (ISP), referring/exit pages, platform type, date/time stamp, and click counts. This data is purely used for diagnostic maintenance, preventing server abuse, and ensuring system stability.</p>
+
+                <h2 class="text-xl font-bold text-white">5. Security</h2>
+                <p>While temporary email messages are processed securely over HTTPS protocols, temporary inboxes are public and disposable by nature. Users should avoid using temporary email addresses for highly sensitive financial credentials, government IDs, or confidential passwords.</p>
+
+                <h2 class="text-xl font-bold text-white">6. Contact Us</h2>
+                <p>If you have any questions or concerns regarding this Privacy Policy, please visit our <a href="/contact.html" class="text-blue-400 underline">Contact Page</a>.</p>
+            </section>
+        </article>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-8 text-center text-xs text-slate-500">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                &copy; <span id="year">2026</span> Nixinbox. All rights reserved.
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 text-slate-400">
+                <a href="/privacy.html" class="hover:text-blue-400 transition">Privacy Policy</a>
+                <a href="/terms.html" class="hover:text-blue-400 transition">Terms of Service</a>
+                <a href="/about.html" class="hover:text-blue-400 transition">About Us</a>
+                <a href="/contact.html" class="hover:text-blue-400 transition">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+    </script>
+</body>
+</html>
