@@ -1,91 +1,80 @@
 const API_BASE = 'https://api.mail.tm';
-let currentEmail = localStorage.getItem('nixinbox_email') || '';
-let currentPassword = localStorage.getItem('nixinbox_pass') || '';
-let currentToken = localStorage.getItem('nixinbox_token') || '';
 
-document.addEventListener('DOMContentLoaded', async () => {
-    if (!currentEmail || !currentToken) {
-        await generateNewEmail();
-    } else {
-        document.getElementById('emailDisplay').value = currentEmail;
-        fetchMessages();
-        setInterval(fetchMessages, 10000); // Auto check inbox every 10 seconds
-    }
+document.addEventListener('DOMContentLoaded', () => {
+    initApp();
 });
 
-async function generateNewEmail() {
+async function initApp() {
+    const emailDisplay = document.getElementById('emailDisplay');
     try {
-        document.getElementById('emailDisplay').value = "Connecting to API...";
+        emailDisplay.value = "Initializing...";
+        
+        // Purana data clear karein taake koi conflict na ho
+        localStorage.removeItem('nixinbox_email');
+        localStorage.removeItem('nixinbox_pass');
+        localStorage.removeItem('nixinbox_token');
+
+        emailDisplay.value = "Fetching domains...";
         const domainRes = await fetch(`${API_BASE}/domains`);
-        if (!domainRes.ok) throw new Error("Domain fetch failed (" + domainRes.status + ")");
+        if (!domainRes.ok) throw new Error("Domains API failed (" + domainRes.status + ")");
         
-        const domains = await domainRes.json();
-        const domainList = domains['hydra:member'] || domains;
-        if (!domainList || domainList.length === 0) throw new Error("No domains available");
+        const domainData = await domainRes.json();
+        const domains = domainData['hydra:member'] || domainData;
+        if (!domains || domains.length === 0) throw new Error("No domains available");
         
-        const domain = domainList[0].domain;
-        const username = 'user_' + Math.random().toString(36).substring(2, 10);
-        const email = `${username}@${domain}`;
+        const domain = domains[0].domain;
+        const username = 'nix_' + Math.random().toString(36).substring(2, 8);
+        const address = `${username}@${domain}`;
         const password = Math.random().toString(36).substring(2, 12);
 
-        document.getElementById('emailDisplay').value = "Creating account...";
-        const res = await fetch(`${API_BASE}/accounts`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ address: email, password: password })
-        });
-
-        if (!res.ok) {
-            const errData = await res.json().catch(() => ({}));
-            throw new Error(errData.message || "Account creation failed (" + res.status + ")");
-        }
-
-        currentEmail = email;
-        currentPassword = password;
-        localStorage.setItem('nixinbox_email', email);
-        localStorage.setItem('nixinbox_pass', password);
-        
-        await getToken(email, password);
-    } catch (err) {
-        console.error(err);
-        document.getElementById('emailDisplay').value = "Error: " + err.message;
-    }
-}
-
-async function getToken(address, password) {
-    try {
-        document.getElementById('emailDisplay').value = "Authenticating...";
-        const res = await fetch(`${API_BASE}/token`, {
+        emailDisplay.value = "Creating account...";
+        const accRes = await fetch(`${API_BASE}/accounts`, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ address, password })
         });
-        const data = await res.json();
-        if (data.token) {
-            currentToken = data.token;
-            localStorage.setItem('nixinbox_token', data.token);
-            document.getElementById('emailDisplay').value = address;
-            fetchMessages();
-            setInterval(fetchMessages, 10000);
-        } else {
-            throw new Error("Token not received");
+
+        if (!accRes.ok) {
+            const errJson = await accRes.json().catch(() => ({}));
+            throw new Error(errJson.message || "Account creation failed (" + accRes.status + ")");
         }
+
+        emailDisplay.value = "Authenticating...";
+        const tokenRes = await fetch(`${API_BASE}/token`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ address, password })
+        });
+
+        if (!tokenRes.ok) throw new Error("Token failed (" + tokenRes.status + ")");
+        const tokenData = await tokenRes.json();
+        
+        if (!tokenData.token) throw new Error("Token missing in response");
+
+        window.currentToken = tokenData.token;
+        window.currentEmail = address;
+        
+        // Success: Email screen par show kar dein
+        emailDisplay.value = address;
+
+        fetchMessages();
+        setInterval(fetchMessages, 10000);
+
     } catch (err) {
         console.error(err);
-        document.getElementById('emailDisplay').value = "Auth Error: " + err.message;
+        emailDisplay.value = "ERROR: " + err.message;
     }
 }
 
 async function fetchMessages() {
-    if (!currentToken) return;
+    if (!window.currentToken) return;
     try {
         const res = await fetch(`${API_BASE}/messages`, {
-            headers: { 'Authorization': `Bearer ${currentToken}` }
+            headers: { 'Authorization': `Bearer ${window.currentToken}` }
         });
         if (!res.ok) return;
         const data = await res.json();
-        const messages = data['hydra:member'] || [];
-        renderInbox(messages);
+        renderInbox(data['hydra:member'] || []);
     } catch (err) {
         console.error(err);
     }
@@ -93,7 +82,7 @@ async function fetchMessages() {
 
 function renderInbox(messages) {
     const inboxList = document.getElementById('inboxList');
-    if (messages.length === 0) {
+    if (!messages || messages.length === 0) {
         inboxList.innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">No messages yet. Waiting...</div>`;
         return;
     }
@@ -112,7 +101,7 @@ function renderInbox(messages) {
 async function readMessage(id) {
     try {
         const res = await fetch(`${API_BASE}/messages/${id}`, {
-            headers: { 'Authorization': `Bearer ${currentToken}` }
+            headers: { 'Authorization': `Bearer ${window.currentToken}` }
         });
         const msg = await res.json();
         
@@ -143,5 +132,9 @@ function copyEmail() {
     const btn = document.getElementById('copyBtn');
     btn.innerText = 'Copied!';
     setTimeout(() => btn.innerText = 'Copy', 2000);
-    }
-                                                         
+}
+
+function generateNewEmail() {
+    initApp();
+            }
+            
