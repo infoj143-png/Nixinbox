@@ -3,25 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nixinbox - Free Disposable Temporary Email Generator</title>
+    <title>Disposable Temporary Email - Free Instant Temp Mail Generator | Nixinbox</title>
     <meta name="description" content="Generate free, instant, and anonymous temporary email addresses with Nixinbox. Protect your personal inbox from spam, newsletters, and email tracking.">
-    <meta name="keywords" content="temporary email, disposable email, temp mail, throwaway email, anonymous email, inbox protection, spam guard">
+    <meta name="keywords" content="disposable temporary email, temp mail generator, throwaway email, anonymous email, inbox protection, spam guard, temporary inbox">
     <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://nixinbox.vercel.app/">
 
     <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
     <meta property="og:url" content="https://nixinbox.vercel.app/">
-    <meta property="og:title" content="Nixinbox - Free Disposable Temporary Email Generator">
-    <meta property="og:description" content="Instant disposable email addresses for verifications and spam protection. Secure, anonymous, and free.">
+    <meta property="og:title" content="Disposable Temporary Email - Free Instant Temp Mail Generator">
+    <meta property="og:description" content="Instant disposable email addresses for verifications and spam protection. Secure, anonymous, and 100% free.">
     <meta property="og:image" content="https://nixinbox.vercel.app/og-image.png">
 
     <!-- Twitter Card -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" content="https://nixinbox.vercel.app/">
-    <meta name="twitter:title" content="Nixinbox - Free Disposable Temporary Email Generator">
+    <meta name="twitter:title" content="Disposable Temporary Email Generator | Nixinbox">
     <meta name="twitter:description" content="Instant disposable email addresses for verifications and spam protection. Secure, anonymous, and free.">
     <meta name="twitter:image" content="https://nixinbox.vercel.app/og-image.png">
+
+    <!-- Structured Data: JSON-LD Schema Markup -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "WebSite",
+          "@id": "https://nixinbox.vercel.app/#website",
+          "url": "https://nixinbox.vercel.app/",
+          "name": "Nixinbox",
+          "description": "Free Disposable Temporary Email Generator & Online Privacy Tool",
+          "publisher": {
+            "@id": "https://nixinbox.vercel.app/#organization"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://nixinbox.vercel.app/#organization",
+          "name": "Nixinbox",
+          "url": "https://nixinbox.vercel.app/",
+          "logo": "https://nixinbox.vercel.app/og-image.png",
+          "sameAs": []
+        },
+        {
+          "@type": "WebApplication",
+          "@id": "https://nixinbox.vercel.app/#webapp",
+          "url": "https://nixinbox.vercel.app/",
+          "name": "Nixinbox Temp Mail Generator",
+          "applicationCategory": "UtilitiesApplication",
+          "operatingSystem": "All",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          },
+          "description": "Instant temporary email generator for online signups, privacy defense, and spam reduction."
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Nixinbox Disposable Mail",
+          "operatingSystem": "Web",
+          "applicationCategory": "SecurityApplication",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "USD"
+          }
+        }
+      ]
+    }
+    </script>
 
     <!-- Tailwind CSS CDN -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -34,53 +86,53 @@
             <a href="/" class="flex items-center gap-2 text-xl font-black text-white tracking-tight">
                 <span class="text-blue-500">Nix</span>inbox
             </a>
-            <nav class="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-300">
+            <nav class="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-300" aria-label="Primary Navigation">
                 <a href="/" class="text-blue-400 font-semibold transition">Home</a>
                 <a href="/blog.html" class="hover:text-blue-400 transition">Blog</a>
                 <a href="/about.html" class="hover:text-blue-400 transition">About Us</a>
                 <a href="/contact.html" class="hover:text-blue-400 transition">Contact Us</a>
             </nav>
             <div class="sm:hidden flex items-center">
-                <button id="mobileMenuBtn" class="text-slate-300 hover:text-white focus:outline-none" aria-label="Toggle Menu">
+                <button id="mobileMenuBtn" class="text-slate-300 hover:text-white focus:outline-none" aria-label="Toggle Navigation Menu">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
             </div>
         </div>
         <!-- Mobile Dropdown -->
-        <div id="mobileMenu" class="hidden sm:hidden border-t border-slate-900 bg-slate-950 px-4 py-3 space-y-2 text-sm text-slate-300">
+        <nav id="mobileMenu" class="hidden sm:hidden border-t border-slate-900 bg-slate-950 px-4 py-3 space-y-2 text-sm text-slate-300" aria-label="Mobile Navigation">
             <a href="/" class="block text-blue-400 font-semibold py-1">Home</a>
             <a href="/blog.html" class="block hover:text-blue-400 py-1">Blog</a>
             <a href="/about.html" class="block hover:text-blue-400 py-1">About Us</a>
             <a href="/contact.html" class="block hover:text-blue-400 py-1">Contact Us</a>
-        </div>
+        </nav>
     </header>
 
     <!-- Top Ad Placeholder (Separated from navigation) -->
     <div class="max-w-2xl mx-auto px-4 mt-6 w-full">
-        <div class="ad-container bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 text-center min-h-[90px] flex flex-col justify-center items-center">
+        <aside class="ad-container bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 text-center min-h-[90px] flex flex-col justify-center items-center" aria-label="Advertisement">
             <span class="text-[10px] uppercase font-semibold text-slate-500 tracking-wider mb-1">Advertisement</span>
             <div id="ad-top-slot" class="w-full text-xs text-slate-600">
                 <!-- AdSense Auto Ads or Responsive Unit Placement -->
             </div>
-        </div>
+        </aside>
     </div>
 
     <!-- Main Container -->
     <main class="max-w-2xl mx-auto px-4 py-6 w-full flex-grow space-y-8">
-        <!-- Hero Header -->
-        <header class="text-center">
+        <!-- Hero Header Section -->
+        <section class="text-center">
             <div class="inline-block bg-blue-600/10 border border-blue-500/20 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                Secure & Anonymous
+                Secure & Anonymous Online Mail
             </div>
-            <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white mb-2">Disposable Temporary Mail</h1>
-            <p class="text-slate-400 text-sm max-w-md mx-auto">Instant throwaway email addresses for your signups, verifications, and online privacy.</p>
-        </header>
+            <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white mb-2">Disposable Temporary Email Generator</h1>
+            <p class="text-slate-400 text-sm max-w-md mx-auto">Instant throwaway email addresses for web signups, account verifications, and online privacy protection.</p>
+        </section>
 
         <!-- Email Generator Box -->
-        <div class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 shadow-2xl">
-            <label for="emailDisplay" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Your Temporary Email Address</label>
+        <section class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 shadow-2xl" aria-label="Temp Email Generator">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Your Temporary Email Address</h2>
             <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="emailDisplay" readonly class="bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-3.5 text-blue-400 font-mono text-sm w-full select-all focus:outline-none shadow-inner" value="Initializing...">
+                <input type="text" id="emailDisplay" readonly class="bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-3.5 text-blue-400 font-mono text-sm w-full select-all focus:outline-none shadow-inner" value="Initializing..." aria-label="Generated Temporary Email Address">
                 <div class="flex gap-2">
                     <button id="copyBtn" onclick="copyEmail()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-medium px-5 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-1.5 cursor-pointer">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 022 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
@@ -92,72 +144,79 @@
                 </div>
             </div>
             <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
-                <span>🔒</span> This email remains active until you click "New". Safe to leave for verifications!
+                <span>🔒</span> Active until you click "New". Safe to leave open for incoming verification codes!
             </p>
-        </div>
+        </section>
 
-        <!-- Mid Ad Container (Adequate separation from operation controls) -->
-        <div class="ad-container bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 text-center min-h-[100px] flex flex-col justify-center items-center">
+        <!-- Mid Ad Container -->
+        <aside class="ad-container bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 text-center min-h-[100px] flex flex-col justify-center items-center" aria-label="Advertisement">
             <span class="text-[10px] uppercase font-semibold text-slate-500 tracking-wider mb-1">Advertisement</span>
             <div id="ad-mid-slot" class="w-full text-xs text-slate-600">
                 <!-- AdSense Responsive Unit Placement -->
             </div>
-        </div>
+        </aside>
 
         <!-- Inbox Section -->
-        <div class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 shadow-2xl">
+        <section class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 shadow-2xl" aria-label="Temporary Mail Inbox">
             <div class="flex justify-between items-center mb-5">
                 <div class="flex items-center gap-2">
-                    <h2 class="text-lg font-bold text-white">Inbox</h2>
+                    <h2 class="text-lg font-bold text-white">Temporary Inbox</h2>
                     <span id="msgCount" class="bg-blue-500/10 text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-blue-500/20">0</span>
                 </div>
                 <button onclick="fetchMessages()" class="text-xs text-blue-400 hover:text-blue-300 font-medium bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
-                    🔄 Refresh
+                    🔄 Refresh Inbox
                 </button>
             </div>
             
             <div id="inboxList" class="divide-y divide-slate-800/60 max-h-[380px] overflow-y-auto pr-1">
                 <div class="text-center py-12 text-slate-500 text-sm">
                     <div class="text-3xl mb-2">📭</div>
-                    Waiting for incoming messages...
+                    Waiting for incoming verification messages...
                 </div>
             </div>
-        </div>
+        </section>
 
-        <!-- Features Overview Section for High Quality Content -->
-        <section class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 space-y-4">
-            <h2 class="text-xl font-bold text-white">Why Choose Nixinbox?</h2>
+        <!-- Features & SEO Content Section -->
+        <section class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 space-y-6">
+            <h2 class="text-xl font-bold text-white">Why Choose Nixinbox Disposable Mail Generator?</h2>
+
             <div class="grid sm:grid-cols-3 gap-4 text-xs sm:text-sm text-slate-300">
-                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/60">
-                    <div class="font-semibold text-blue-400 mb-1">Zero Registration</div>
-                    <p class="text-slate-400 text-xs">Instantly generate temporary emails without submitting passwords or personal info.</p>
-                </div>
-                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/60">
-                    <div class="font-semibold text-blue-400 mb-1">Spam Shield</div>
-                    <p class="text-slate-400 text-xs">Keep junk email and phishing threats far away from your primary personal email inbox.</p>
-                </div>
-                <div class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/60">
-                    <div class="font-semibold text-blue-400 mb-1">Automated Clearing</div>
-                    <p class="text-slate-400 text-xs">Messages automatically expire, ensuring complete digital privacy after usage.</p>
-                </div>
+                <article class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/60">
+                    <h3 class="font-semibold text-blue-400 mb-1">Zero Registration</h3>
+                    <p class="text-slate-400 text-xs">Instantly generate temporary emails without submitting passwords, phone numbers, or personal info.</p>
+                </article>
+                <article class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/60">
+                    <h3 class="font-semibold text-blue-400 mb-1">Spam Shield</h3>
+                    <p class="text-slate-400 text-xs">Keep unwanted promotional newsletters, tracking pixels, and phishing threats far away from your primary mailbox.</p>
+                </article>
+                <article class="bg-slate-950/60 p-4 rounded-xl border border-slate-800/60">
+                    <h3 class="font-semibold text-blue-400 mb-1">Automated Clearing</h3>
+                    <p class="text-slate-400 text-xs">Messages clear automatically, ensuring total digital privacy during online verifications and web testing.</p>
+                </article>
+            </div>
+
+            <div class="text-xs text-slate-400 space-y-3 leading-relaxed border-t border-slate-800/80 pt-4">
+                <h3 class="text-sm font-semibold text-slate-200">How Temp Mail Protects Your Digital Identity</h3>
+                <p>When registering for new apps, forum accounts, software downloads, or public Wi-Fi networks, submitting your permanent personal email address exposes you to email data breaches, aggressive advertising tracking, and marketing cold calls. Using a temporary disposable email generator like Nixinbox allows you to receive instant verification links while keeping your private inbox clean and secure.</p>
+                <p>Explore our comprehensive <a href="/blog.html" class="text-blue-400 hover:underline">Privacy Blog Articles</a> to learn more about protecting your personal data, bypassing email tracking pixels, and optimizing online security.</p>
             </div>
         </section>
     </main>
 
     <!-- Bottom Ad Container -->
     <div class="max-w-2xl mx-auto px-4 mb-6 w-full">
-        <div class="ad-container bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 text-center min-h-[90px] flex flex-col justify-center items-center">
+        <aside class="ad-container bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 text-center min-h-[90px] flex flex-col justify-center items-center" aria-label="Advertisement">
             <span class="text-[10px] uppercase font-semibold text-slate-500 tracking-wider mb-1">Advertisement</span>
             <div id="ad-bottom-slot" class="w-full text-xs text-slate-600">
                 <!-- AdSense Footer Placement -->
             </div>
-        </div>
+        </aside>
     </div>
 
     <!-- Message Detail Modal -->
     <div id="messageModal" class="hidden fixed inset-0 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4 z-50">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl max-w-lg w-full p-6 relative shadow-2xl">
-            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 w-8 h-8 rounded-full flex items-center justify-center transition">&times;</button>
+            <button onclick="closeModal()" class="absolute top-4 right-4 text-slate-400 hover:text-white bg-slate-800 hover:bg-slate-700 w-8 h-8 rounded-full flex items-center justify-center transition" aria-label="Close Message Modal">&times;</button>
             <div class="mb-4 pr-6">
                 <span id="modalSender" class="text-xs font-semibold text-blue-400 block mb-1"></span>
                 <h3 id="modalSubject" class="text-xl font-bold text-white"></h3>
@@ -173,12 +232,12 @@
             <div>
                 &copy; <span id="year">2026</span> Nixinbox. All rights reserved.
             </div>
-            <div class="flex flex-wrap justify-center gap-4 text-slate-400">
+            <nav class="flex flex-wrap justify-center gap-4 text-slate-400" aria-label="Footer Navigation">
                 <a href="/privacy.html" class="hover:text-blue-400 transition">Privacy Policy</a>
                 <a href="/terms.html" class="hover:text-blue-400 transition">Terms of Service</a>
                 <a href="/about.html" class="hover:text-blue-400 transition">About Us</a>
                 <a href="/contact.html" class="hover:text-blue-400 transition">Contact Us</a>
-            </div>
+            </nav>
         </div>
     </footer>
 
