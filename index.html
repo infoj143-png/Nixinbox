@@ -75,17 +75,18 @@
 
     <!-- Footer -->
     <footer class="text-center py-6 text-xs text-slate-600 border-t border-slate-900">
-        Powered by Mail.tm &bull; Hosted on Vercel
+        Powered by 1secmail &bull; Hosted on Vercel
     </footer>
 
     <!-- JavaScript Logic -->
     <script>
         let currentEmail = localStorage.getItem('nixinbox_email') || "";
-        let currentPassword = localStorage.getItem('nixinbox_pass') || "";
-        let token = localStorage.getItem('nixinbox_token') || "";
+        let login = "";
+        let domain = "";
 
         window.onload = async () => {
-            if (currentEmail && token) {
+            if (currentEmail) {
+                parseEmail(currentEmail);
                 document.getElementById("emailDisplay").value = currentEmail;
                 checkInbox();
             } else {
@@ -95,41 +96,25 @@
             setInterval(checkInbox, 10000);
         };
 
+        function parseEmail(email) {
+            const parts = email.split('@');
+            login = parts[0];
+            domain = parts[1];
+        }
+
         async function generateEmail() {
             const display = document.getElementById("emailDisplay");
             display.value = "Generating new email...";
             
             try {
-                const domainRes = await fetch('https://api.mail.tm/domains');
-                const domainData = await domainRes.json();
-                const domains = domainData['hydra:member'] || domainData;
-                if (!domains || domains.length === 0) throw new Error("Domain not found");
-                const domain = domains[0].domain;
-
-                const username = 'nix_' + Math.random().toString(36).substring(2, 8);
-                currentEmail = `${username}@${domain}`;
-                currentPassword = Math.random().toString(36).substring(2, 12);
-
-                const accRes = await fetch('https://api.mail.tm/accounts', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ address: currentEmail, password: currentPassword })
-                });
-
-                if (!accRes.ok) throw new Error("Account creation failed");
-
-                const tokenRes = await fetch('https://api.mail.tm/token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ address: currentEmail, password: currentPassword })
-                });
-
-                const tokenData = await tokenRes.json();
-                token = tokenData.token;
-
+                const res = await fetch('https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1');
+                const data = await res.json();
+                if (!data || data.length === 0) throw new Error("Generation failed");
+                
+                currentEmail = data[0];
+                parseEmail(currentEmail);
+                
                 localStorage.setItem('nixinbox_email', currentEmail);
-                localStorage.setItem('nixinbox_pass', currentPassword);
-                localStorage.setItem('nixinbox_token', token);
 
                 display.value = currentEmail;
                 document.getElementById("inboxList").innerHTML = `<div class="text-center py-12 text-slate-500 text-sm"><div class="text-3xl mb-2">📭</div>Inbox is empty. Waiting for code...</div>`;
@@ -141,23 +126,13 @@
         }
 
         async function checkInbox() {
-            if (!token) return;
+            if (!login || !domain) return;
             
             try {
-                const res = await fetch('https://api.mail.tm/messages', {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
-                
-                if (!res.ok) {
-                    if (currentEmail && currentPassword) {
-                        await reauthenticate();
-                        return;
-                    }
-                    return;
-                }
+                const res = await fetch(`https://www.1secmail.com/api/v1/?action=getMessages&login=${login}&domain=${domain}`);
+                if (!res.ok) return;
 
-                const data = await res.json();
-                const messages = data['hydra:member'] || data;
+                const messages = await res.json();
                 document.getElementById("msgCount").innerText = messages.length;
 
                 const inboxList = document.getElementById("inboxList");
@@ -168,10 +143,10 @@
                 inboxList.innerHTML = messages.map(m => `
                     <div onclick="readMessage('${m.id}')" class="py-3 px-3 hover:bg-slate-800/50 cursor-pointer transition flex justify-between items-center rounded-xl my-1 group">
                         <div class="pr-2">
-                            <div class="text-sm font-semibold text-white group-hover:text-blue-400 transition">${m.from.name || m.from.address}</div>
+                            <div class="text-sm font-semibold text-white group-hover:text-blue-400 transition">${m.from}</div>
                             <div class="text-xs text-slate-400 truncate max-w-xs">${m.subject || '(No Subject)'}</div>
                         </div>
-                        <div class="text-xs text-slate-500 whitespace-nowrap">${new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                        <div class="text-xs text-slate-500 whitespace-nowrap">${m.date}</div>
                     </div>
                 `).join('');
             } catch (e) {
@@ -181,19 +156,17 @@
 
         async function readMessage(id) {
             try {
-                const res = await fetch(`https://api.mail.tm/messages/${id}`, {
-                    headers: { 'Authorization': `Bearer ${token}` }
-                });
+                const res = await fetch(`https://www.1secmail.com/api/v1/?action=readMessage&login=${login}&domain=${domain}&id=${id}`);
                 const msg = await res.json();
                 
                 document.getElementById('modalSubject').innerText = msg.subject || 'No Subject';
-                document.getElementById('modalSender').innerText = `From: ${msg.from.address}`;
+                document.getElementById('modalSender').innerText = `From: ${msg.from}`;
                 
                 const bodyContainer = document.getElementById('modalBody');
-                if (msg.html && msg.html.length > 0) {
-                    bodyContainer.innerHTML = `<iframe srcdoc="${msg.html.replace(/"/g, '&quot;')}" class="w-full h-48 bg-white rounded-lg border-0"></iframe>`;
+                if (msg.htmlBody && msg.htmlBody.length > 0) {
+                    bodyContainer.innerHTML = `<iframe srcdoc="${msg.htmlBody.replace(/"/g, '&quot;')}" class="w-full h-48 bg-white rounded-lg border-0"></iframe>`;
                 } else {
-                    bodyContainer.innerText = msg.text || 'Empty message body';
+                    bodyContainer.innerText = msg.textBody || msg.body || 'Empty message body';
                 }
 
                 document.getElementById('messageModal').classList.remove('hidden');
@@ -204,24 +177,6 @@
 
         function closeModal() {
             document.getElementById('messageModal').classList.add('hidden');
-        }
-
-        async function reauthenticate() {
-            try {
-                const tokenRes = await fetch('https://api.mail.tm/token', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ address: currentEmail, password: currentPassword })
-                });
-                const tokenData = await tokenRes.json();
-                if (tokenData.token) {
-                    token = tokenData.token;
-                    localStorage.setItem('nixinbox_token', token);
-                    checkInbox();
-                }
-            } catch (err) {
-                console.error(err);
-            }
         }
 
         function copyEmail() {
@@ -240,5 +195,5 @@
         }
     </script>
 </body>
-            </html>
+    </html>
     
