@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact Us - Nixinbox</title>
+    <meta name="description" content="Contact the Nixinbox team for inquiries, feedback, or support regarding our temporary disposable email service.">
+    <link rel="canonical" href="https://nixinbox.vercel.app/contact.html">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-blue-500 selection:text-white">
+
+    <!-- Header Navigation -->
+    <header class="border-b border-slate-900 bg-slate-950/80 backdrop-blur-md sticky top-0 z-40">
+        <div class="max-w-5xl mx-auto px-4 py-4 flex items-center justify-between">
+            <a href="/" class="flex items-center gap-2 text-xl font-black text-white tracking-tight">
+                <span class="text-blue-500">Nix</span>inbox
+            </a>
+            <nav class="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-300">
+                <a href="/" class="hover:text-blue-400 transition">Home</a>
+                <a href="/blog.html" class="hover:text-blue-400 transition">Blog</a>
+                <a href="/about.html" class="hover:text-blue-400 transition">About Us</a>
+                <a href="/contact.html" class="text-blue-400 font-semibold transition">Contact Us</a>
+            </nav>
+            <div class="sm:hidden flex items-center">
+                <button id="mobileMenuBtn" class="text-slate-300 hover:text-white focus:outline-none" aria-label="Toggle Menu">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Dropdown -->
+        <div id="mobileMenu" class="hidden sm:hidden border-t border-slate-900 bg-slate-950 px-4 py-3 space-y-2 text-sm text-slate-300">
+            <a href="/" class="block hover:text-blue-400 py-1">Home</a>
+            <a href="/blog.html" class="block hover:text-blue-400 py-1">Blog</a>
+            <a href="/about.html" class="block hover:text-blue-400 py-1">About Us</a>
+            <a href="/contact.html" class="block hover:text-blue-400 py-1 font-semibold text-blue-400">Contact Us</a>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <main class="max-w-4xl mx-auto px-4 py-12 flex-grow w-full">
+        <div class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl space-y-8">
+            <header class="border-b border-slate-800 pb-6">
+                <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">Contact Us</h1>
+                <p class="text-slate-400 text-sm sm:text-base">Have questions, feedback, or need technical support? Send us a message and our team will get back to you shortly.</p>
+            </header>
+
+            <div class="grid md:grid-cols-3 gap-8">
+                <!-- Info Column -->
+                <div class="space-y-6 text-slate-300 text-sm">
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl">
+                        <div class="text-blue-400 font-semibold mb-1 flex items-center gap-2">
+                            <span>📧</span> Direct Email
+                        </div>
+                        <p class="text-slate-400 text-xs">support@nixinbox.vercel.app</p>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl">
+                        <div class="text-blue-400 font-semibold mb-1 flex items-center gap-2">
+                            <span>⏱️</span> Response Time
+                        </div>
+                        <p class="text-slate-400 text-xs">We aim to respond to all inquiries within 24–48 business hours.</p>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl">
+                        <div class="text-blue-400 font-semibold mb-1 flex items-center gap-2">
+                            <span>🛡️</span> Privacy Guarantee
+                        </div>
+                        <p class="text-slate-400 text-xs">Your personal details will never be shared with third parties or sold to marketers.</p>
+                    </div>
+                </div>
+
+                <!-- Functional Form Layout -->
+                <div class="md:col-span-2">
+                    <form id="contactForm" onsubmit="handleContactSubmit(event)" class="space-y-5">
+                        <div id="formSuccessAlert" class="hidden bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-xl text-sm">
+                            ✓ Thank you for reaching out! Your message has been sent successfully.
+                        </div>
+
+                        <div>
+                            <label for="name" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Your Name</label>
+                            <input type="text" id="name" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="John Doe">
+                        </div>
+
+                        <div>
+                            <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Email Address</label>
+                            <input type="email" id="email" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="name@example.com">
+                        </div>
+
+                        <div>
+                            <label for="subject" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Subject</label>
+                            <input type="text" id="subject" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Inquiry regarding Nixinbox">
+                        </div>
+
+                        <div>
+                            <label for="message" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Message</label>
+                            <textarea id="message" rows="5" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Write your message here..."></textarea>
+                        </div>
+
+                        <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl text-sm transition shadow-lg shadow-blue-600/20 cursor-pointer">
+                            Send Message
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-900 bg-slate-950 py-8 text-center text-xs text-slate-500">
+        <div class="max-w-5xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div>
+                &copy; <span id="year">2026</span> Nixinbox. All rights reserved.
+            </div>
+            <div class="flex flex-wrap justify-center gap-4 text-slate-400">
+                <a href="/privacy.html" class="hover:text-blue-400 transition">Privacy Policy</a>
+                <a href="/terms.html" class="hover:text-blue-400 transition">Terms of Service</a>
+                <a href="/about.html" class="hover:text-blue-400 transition">About Us</a>
+                <a href="/contact.html" class="hover:text-blue-400 transition">Contact Us</a>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+        document.getElementById('mobileMenuBtn').addEventListener('click', () => {
+            document.getElementById('mobileMenu').classList.toggle('hidden');
+        });
+
+        function handleContactSubmit(event) {
+            event.preventDefault();
+            const submitBtn = document.getElementById('submitBtn');
+            const alertBox = document.getElementById('formSuccessAlert');
+
+            submitBtn.disabled = true;
+            submitBtn.innerText = 'Sending...';
+
+            setTimeout(() => {
+                alertBox.classList.remove('hidden');
+                document.getElementById('contactForm').reset();
+                submitBtn.disabled = false;
+                submitBtn.innerText = 'Send Message';
+            }, 800);
+        }
+    </script>
+</body>
+</html>
