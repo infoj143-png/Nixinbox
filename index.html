@@ -75,14 +75,15 @@
 
     <!-- Footer -->
     <footer class="text-center py-6 text-xs text-slate-600 border-t border-slate-900">
-        Powered by 1secmail &bull; Hosted on Vercel
+        Powered by Secure Proxy &bull; Hosted on Vercel
     </footer>
 
-    <!-- JavaScript Logic -->
+    <!-- JavaScript Logic with CORS Proxy Integration -->
     <script>
         let currentEmail = localStorage.getItem('nixinbox_email') || "";
         let login = "";
         let domain = "";
+        const CORS_PROXY = "https://corsproxy.io/?";
 
         window.onload = async () => {
             if (currentEmail) {
@@ -108,7 +109,10 @@
             display.value = "Generating new email...";
             
             try {
-                const res = await fetch('https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1');
+                const targetUrl = encodeURIComponent('https://www.1secmail.com/api/v1/?action=genRandomMailbox&count=1');
+                const res = await fetch(CORS_PROXY + targetUrl);
+                if (!res.ok) throw new Error("Proxy response failed");
+                
                 const data = await res.json();
                 if (!data || data.length === 0) throw new Error("Generation failed");
                 
@@ -121,7 +125,7 @@
                 document.getElementById("inboxList").innerHTML = `<div class="text-center py-12 text-slate-500 text-sm"><div class="text-3xl mb-2">📭</div>Inbox is empty. Waiting for code...</div>`;
                 document.getElementById("msgCount").innerText = "0";
             } catch (err) {
-                console.error(err);
+                console.error("Error:", err);
                 display.value = "Error generating email. Click New.";
             }
         }
@@ -130,7 +134,8 @@
             if (!login || !domain) return;
             
             try {
-                const res = await fetch(`https://www.1secmail.com/api/v1/?action=getMessages&login=${login}&domain=${domain}`);
+                const targetUrl = encodeURIComponent(`https://www.1secmail.com/api/v1/?action=getMessages&login=${login}&domain=${domain}`);
+                const res = await fetch(CORS_PROXY + targetUrl);
                 if (!res.ok) return;
 
                 const messages = await res.json();
@@ -155,14 +160,15 @@
 
         async function readMessage(id) {
             try {
-                const res = await fetch(`https://www.1secmail.com/api/v1/?action=readMessage&login=${login}&domain=${domain}&id=${id}`);
+                const targetUrl = encodeURIComponent(`https://www.1secmail.com/api/v1/?action=readMessage&login=${login}&domain=${domain}&id=${id}`);
+                const res = await fetch(CORS_PROXY + targetUrl);
                 const msg = await res.json();
                 
                 document.getElementById('modalSubject').innerText = msg.subject || 'No Subject';
                 document.getElementById('modalSender').innerText = `From: ${msg.from}`;
                 
                 const bodyContainer = document.getElementById('modalBody');
-                if (msg.htmlBody && msg.htmlBody.length > 0) {
+                if (msg.htmlBody && msg.htmlBody.length >0) {
                     bodyContainer.innerHTML = `<iframe srcdoc="${msg.htmlBody.replace(/"/g, '&quot;')}" class="w-full h-48 bg-white rounded-lg border-0"></iframe>`;
                 } else {
                     bodyContainer.innerText = msg.textBody || msg.body || 'Empty message body';
@@ -194,5 +200,5 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>
+
