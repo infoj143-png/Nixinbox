@@ -103,9 +103,13 @@
                 const domainData = await domainRes.json();
                 const domains = domainData['hydra:member'] || domainData;
                 if (!domains || domains.length === 0) throw new Error("Domain not found");
-                const domain = domains[0].domain;
+                
+                // Pick a random domain from available domains for better rotation
+                const randomDomainObj = domains[Math.floor(Math.random() * domains.length)];
+                const domain = randomDomainObj.domain;
 
-                const username = 'nix_' + Math.random().toString(36).substring(2, 8);
+                // Short and clean username format (e.g. nx4k92)
+                const username = 'nx' + Math.random().toString(36).substring(2, 7);
                 currentEmail = `${username}@${domain}`;
                 currentPassword = 'NixPass@2026!';
 
@@ -238,5 +242,4 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>
