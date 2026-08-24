@@ -1,216 +1,134 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Nixinbox - Disposable Temporary Email</title>
-  <!-- Tailwind CSS CDN -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      darkMode: 'class',
-      theme: {
-        extend: {
-          colors: {
-            brand: {
-              50: '#eef2ff',
-              100: '#e0e7ff',
-              500: '#6366f1',
-              600: '#4f46e5',
-              700: '#4338ca',
-            }
-          }
-        }
-      }
-    }
-  </script>
-  <!-- FontAwesome for icons -->
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nixinbox - Temporary Disposable Mail</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+<body class="bg-gray-950 text-gray-100 min-h-screen flex flex-col justify-between">
+    <div class="max-w-3xl mx-auto px-4 py-8 w-full">
+        <!-- Header -->
+        <header class="text-center mb-8">
+            <h1 class="text-3xl font-extrabold text-blue-500 tracking-wider">Nixinbox</h1>
+            <p class="text-gray-400 text-sm mt-1">Fast, secure, and free temporary disposable email.</p>
+        </header>
 
-  <!-- Header -->
-  <header class="border-b border-slate-800 bg-slate-900/60 backdrop-blur-md sticky top-0 z-30">
-    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-      <div class="flex items-center space-x-3">
-        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-violet-500 flex items-center justify-center shadow-lg shadow-indigo-500/20">
-          <i class="fa-solid me-envelope-open-text text-xl text-white"></i>
-        </div>
-        <div>
-          <h1 class="text-xl font-bold tracking-tight bg-gradient-to-r from-white via-slate-200 to-slate-400 bg-clip-text text-transparent">Nixinbox</h1>
-          <p class="text-xs text-slate-400 hidden sm:block">Disposable Temporary Mail</p>
-        </div>
-      </div>
-      <div class="flex items-center space-x-3">
-        <span class="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-          <span class="w-2 h-2 mr-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          Ready
-        </span>
-      </div>
-    </div>
-  </header>
-
-  <!-- Main Content -->
-  <main class="flex-1 max-w-6xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-
-    <!-- Hero / Email Address Display Box -->
-    <section class="bg-gradient-to-b from-slate-900 to-slate-900/80 border border-slate-800 rounded-2xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
-      <!-- Background Ambient Glow -->
-      <div class="absolute -top-24 -right-24 w-96 h-96 bg-indigo-600/10 rounded-full blur-3xl pointer-events-none"></div>
-
-      <div class="max-w-3xl mx-auto text-center space-y-4">
-        <h2 class="text-2xl sm:text-3xl font-extrabold text-white">Your Temporary Email Address</h2>
-        <p class="text-slate-400 text-sm sm:text-base">Use this address to receive emails anonymously. Messages refresh automatically.</p>
-
-        <!-- Email Box Input Group -->
-        <div class="pt-2 flex flex-col sm:flex-row items-center gap-3">
-          <div class="relative w-full">
-            <div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none text-slate-400">
-              <i class="fa-regular fa-envelope text-lg"></i>
+        <!-- Email Box -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 shadow-lg mb-6">
+            <label class="block text-xs uppercase tracking-wider text-gray-400 mb-2 font-semibold">Your Temporary Email Address</label>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input type="text" id="emailDisplay" readonly class="bg-gray-950 border border-gray-700 rounded-lg px-4 py-3 text-white w-full select-all font-mono text-sm focus:outline-none" value="Generating email...">
+                <div class="flex gap-2">
+                    <button id="copyBtn" onclick="copyEmail()" class="bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-3 rounded-lg text-sm transition flex items-center justify-center gap-1">Copy</button>
+                    <button id="refreshEmailBtn" onclick="generateEmail()" class="bg-gray-800 hover:bg-gray-700 text-gray-200 px-4 py-3 rounded-lg text-sm transition">New</button>
+                </div>
             </div>
-            <input
-              type="text"
-              id="email-address"
-              readonly
-              value="Generating address..."
-              class="w-full pl-11 pr-12 py-3.5 bg-slate-950/80 border border-slate-700/80 rounded-xl text-slate-100 font-mono text-sm sm:text-base focus:outline-none focus:border-indigo-500 transition-colors shadow-inner"
-            />
-            <div id="loading-spinner" class="absolute inset-y-0 right-0 pr-4 flex items-center pointer-events-none hidden">
-              <i class="fa-solid fa-circle-notch fa-spin text-indigo-400 text-lg"></i>
+        </div>
+
+        <!-- Inbox Section -->
+        <div class="bg-gray-900 border border-gray-800 rounded-xl p-6 shadow-lg">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-lg font-semibold text-gray-200">Inbox</h2>
+                <button onclick="checkInbox()" class="text-xs text-blue-400 hover:underline flex items-center gap-1">🔄 Refresh Inbox</button>
             </div>
-          </div>
-
-          <div class="flex items-center gap-2 w-full sm:w-auto">
-            <button
-              id="btn-copy"
-              type="button"
-              class="flex-1 sm:flex-initial inline-flex items-center justify-center px-5 py-3.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 active:bg-indigo-700 text-white font-medium text-sm transition-all shadow-lg shadow-indigo-600/25 space-x-2"
-            >
-              <i class="fa-regular fa-copy"></i>
-              <span>Copy</span>
-            </button>
-            <button
-              id="btn-new-email"
-              type="button"
-              class="flex-1 sm:flex-initial inline-flex items-center justify-center px-5 py-3.5 rounded-xl bg-slate-800 hover:bg-slate-700 active:bg-slate-800 text-slate-200 border border-slate-700 font-medium text-sm transition-all space-x-2"
-            >
-              <i class="fa-solid fa-arrows-rotate"></i>
-              <span>New Email</span>
-            </button>
-          </div>
+            <div id="inboxList" class="divide-y divide-gray-800 max-h-96 overflow-y-auto">
+                <div class="text-center py-8 text-gray-500 text-sm">Waiting for incoming messages...</div>
+            </div>
         </div>
-      </div>
-    </section>
-
-    <!-- Inbox Section -->
-    <section class="bg-slate-900/70 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
-      <!-- Inbox Header -->
-      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between flex-wrap gap-4 bg-slate-900/90">
-        <div class="flex items-center space-x-3">
-          <h3 class="text-lg font-semibold text-white flex items-center gap-2">
-            <i class="fa-solid fa-inbox text-indigo-400"></i>
-            <span>Inbox</span>
-          </h3>
-          <span id="message-count-badge" class="px-2.5 py-0.5 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">0 messages</span>
-        </div>
-
-        <div class="flex items-center space-x-4">
-          <span class="text-xs text-slate-400 flex items-center gap-1.5">
-            <i class="fa-solid fa-clock-rotate-left text-slate-500"></i>
-            Auto-refresh in <span id="timer-countdown" class="font-mono text-indigo-400 font-semibold">10</span>s
-          </span>
-          <button
-            id="btn-refresh"
-            type="button"
-            class="p-2 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 transition-colors border border-slate-700 text-xs flex items-center gap-1.5"
-            title="Refresh Inbox Now"
-          >
-            <i id="refresh-icon" class="fa-solid fa-rotate"></i>
-            <span>Refresh</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Messages List Container -->
-      <div id="inbox-container" class="divide-y divide-slate-800/60 min-h-[250px] relative">
-        <!-- Empty State (default) -->
-        <div id="inbox-empty" class="p-12 text-center space-y-3">
-          <div class="w-16 h-16 rounded-full bg-slate-800/80 mx-auto flex items-center justify-center text-slate-500">
-            <i class="fa-regular fa-envelope-open text-2xl"></i>
-          </div>
-          <h4 class="text-slate-300 font-medium text-base">Your inbox is empty</h4>
-          <p class="text-slate-500 text-xs max-w-sm mx-auto">Waiting for incoming messages. Sent emails will automatically appear here without refreshing.</p>
-        </div>
-
-        <!-- Messages list items injected dynamically -->
-        <div id="inbox-list" class="divide-y divide-slate-800/80 hidden"></div>
-      </div>
-    </section>
-
-  </main>
-
-  <!-- Footer -->
-  <footer class="border-t border-slate-800/80 bg-slate-950 py-6 text-center text-xs text-slate-500">
-    <p>&copy; <span id="year"></span> Nixinbox. Powered by Mail.tm API.</p>
-  </footer>
-
-  <!-- Message Detail Modal -->
-  <div id="message-modal" class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-sm hidden">
-    <div class="bg-slate-900 border border-slate-800 w-full max-w-3xl rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
-
-      <!-- Modal Header -->
-      <div class="px-6 py-4 border-b border-slate-800 flex items-center justify-between bg-slate-900">
-        <h3 id="modal-subject" class="text-lg font-bold text-white truncate pr-4">Email Details</h3>
-        <button
-          id="btn-close-modal"
-          type="button"
-          class="text-slate-400 hover:text-white p-1 rounded-lg hover:bg-slate-800 transition-colors"
-        >
-          <i class="fa-solid fa-xmark text-xl"></i>
-        </button>
-      </div>
-
-      <!-- Modal Meta Info -->
-      <div class="px-6 py-4 bg-slate-950/50 border-b border-slate-800/60 text-xs sm:text-sm space-y-2">
-        <div class="flex items-center justify-between flex-wrap gap-2">
-          <div>
-            <span class="text-slate-400">From:</span>
-            <span id="modal-from" class="font-medium text-indigo-300 ml-1"></span>
-          </div>
-          <div id="modal-date" class="text-slate-500"></div>
-        </div>
-        <div>
-          <span class="text-slate-400">To:</span>
-          <span id="modal-to" class="text-slate-300 ml-1 font-mono"></span>
-        </div>
-      </div>
-
-      <!-- Modal Body Content -->
-      <div class="p-6 flex-1 overflow-y-auto bg-slate-900 text-slate-200 space-y-4">
-        <div id="modal-loading" class="text-center py-8 text-slate-400 space-y-2 hidden">
-          <i class="fa-solid fa-circle-notch fa-spin text-2xl text-indigo-500"></i>
-          <p class="text-xs">Loading message content...</p>
-        </div>
-        <div id="modal-content" class="text-sm leading-relaxed"></div>
-      </div>
-
-      <!-- Modal Footer -->
-      <div class="px-6 py-3 border-t border-slate-800 bg-slate-900 flex justify-end">
-        <button
-          id="btn-modal-close-footer"
-          type="button"
-          class="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs font-medium rounded-lg transition-colors border border-slate-700"
-        >
-          Close
-        </button>
-      </div>
-
     </div>
-  </div>
 
-  <!-- Toast Container -->
-  <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col space-y-2 pointer-events-none"></div>
+    <script>
+        let currentEmail = "";
+        let currentPassword = "";
+        let token = "";
 
-  <script src="app.js"></script>
+        async function generateEmail() {
+            const display = document.getElementById("emailDisplay");
+            display.value = "Generating email...";
+            
+            try {
+                const domainRes = await fetch('https://api.mail.tm/domains');
+                const domainData = await domainRes.json();
+                const domains = domainData['hydra:member'] || domainData;
+                if (!domains || domains.length === 0) throw new Error("Domain not found");
+                const domain = domains[0].domain;
+
+                const username = 'user_' + Math.random().toString(36).substring(2, 8);
+                currentEmail = `${username}@${domain}`;
+                currentPassword = Math.random().toString(36).substring(2, 10);
+
+                const accRes = await fetch('https://api.mail.tm/accounts', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: currentEmail, password: currentPassword })
+                });
+
+                if (!accRes.ok) throw new Error("Account creation failed");
+
+                const tokenRes = await fetch('https://api.mail.tm/token', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ address: currentEmail, password: currentPassword })
+                });
+
+                const tokenData = await tokenRes.json();
+                token = tokenData.token;
+
+                display.value = currentEmail;
+                document.getElementById("inboxList").innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">Inbox is empty. Waiting for incoming messages...</div>`;
+            } catch (err) {
+                console.error(err);
+                // Fallback taake app kabhi na atke
+                currentEmail = `temp_${Math.floor(Math.random() * 90000 + 10000)}@mail.tm`;
+                display.value = currentEmail;
+                document.getElementById("inboxList").innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">Offline fallback active. Click 'New' to retry.</div>`;
+            }
+        }
+
+        async function checkInbox() {
+            if (!token) {
+                alert("Please generate an email first!");
+                return;
+            }
+            const inboxList = document.getElementById("inboxList");
+            inboxList.innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">Checking inbox...</div>`;
+
+            try {
+                const res = await fetch('https://api.mail.tm/messages', {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                const messages = data['hydra:member'] || data;
+
+                if (!messages || messages.length === 0) {
+                    inboxList.innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">No messages yet. Waiting...</div>`;
+                } else {
+                    inboxList.innerHTML = messages.map(m => `
+                        <div class="py-3 px-2 hover:bg-gray-800/50 cursor-pointer transition flex justify-between items-center rounded">
+                            <div>
+                                <div class="text-sm font-medium text-white">From: ${m.from.address}</div>
+                                <div class="text-xs text-gray-400 truncate max-w-xs">Subject: ${m.subject || '(No Subject)'}</div>
+                            </div>
+                        </div>
+                    `).join('');
+                }
+            } catch (e) {
+                inboxList.innerHTML = `<div class="text-center py-8 text-gray-500 text-sm">Error loading messages.</div>`;
+            }
+        }
+
+        function copyEmail() {
+            const display = document.getElementById("emailDisplay");
+            if (!currentEmail) return;
+            navigator.clipboard.writeText(currentEmail);
+            const btn = document.getElementById("copyBtn");
+            btn.innerText = "Copied!";
+            setTimeout(() => btn.innerText = "Copy", 2000);
+        }
+
+        window.onload = generateEmail;
+    </script>
 </body>
 </html>
