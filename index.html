@@ -68,7 +68,7 @@
                 <span id="modalSender" class="text-xs font-semibold text-blue-400 block mb-1"></span>
                 <h3 id="modalSubject" class="text-xl font-bold text-white"></h3>
             </div>
-            <div id="modalBody" class="bg-slate-950 border border-slate-800 p-4 rounded-xl text-blue-300 text-base font-mono whitespace-pre-wrap max-h-64 overflow-y-auto mb-4 select-all"></div>
+            <div id="modalBody" class="bg-slate-950 border border-slate-800 p-4 rounded-xl text-blue-300 text-sm font-mono whitespace-pre-wrap max-h-64 overflow-y-auto mb-4 select-all"></div>
             <button onclick="closeModal()" class="w-full bg-slate-800 hover:bg-slate-700 text-white font-medium py-2.5 rounded-xl text-sm transition">Close</button>
         </div>
     </div>
@@ -167,7 +167,6 @@
                 const inboxList = document.getElementById("inboxList");
                 if (!messages || messages.length === 0) return;
 
-                // Cache messages for instant reading without extra API calls
                 messageCache = {};
                 messages.forEach(m => {
                     messageCache[m.id] = m;
@@ -177,7 +176,7 @@
                     <div onclick="readMessage('${m.id}')" class="py-3 px-3 hover:bg-slate-800/50 cursor-pointer transition flex justify-between items-center rounded-xl my-1 group">
                         <div class="pr-2">
                             <div class="text-sm font-semibold text-white group-hover:text-blue-400 transition">${m.from.name || m.from.address}</div>
-                            <div class="text-xs text-slate-400 truncate max-w-xs">${m.subject || '(No Subject)'} - ${m.intro || ''}</div>
+                            <div class="text-xs text-slate-400 truncate max-w-xs">${m.subject || '(No Subject)'} ${m.intro ? '- ' + m.intro : ''}</div>
                         </div>
                         <div class="text-xs text-slate-500 whitespace-nowrap">${new Date(m.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
                     </div>
@@ -187,26 +186,58 @@
             }
         }
 
-        function readMessage(id) {
-            const msg = messageCache[id];
+        async function readMessage(id) {
             const modal = document.getElementById('messageModal');
             const modalSubject = document.getElementById('modalSubject');
             const modalSender = document.getElementById('modalSender');
             const modalBody = document.getElementById('modalBody');
 
-            if (!msg) {
-                modalSubject.innerText = "Error";
-                modalSender.innerText = "";
-                modalBody.innerText = "Message content not found. Please refresh inbox.";
-                modal.classList.remove('hidden');
-                return;
-            }
-
-            modalSubject.innerText = msg.subject || 'No Subject';
-            modalSender.innerText = `From: ${msg.from.address}`;
-            modalBody.innerText = msg.intro || 'No preview text available.';
-            
+            modalSubject.innerText = "Loading message...";
+            modalSender.innerText = "";
+            modalBody.innerText = "Fetching full email content...";
             modal.classList.remove('hidden');
+
+            try {
+                let res = await fetch(`https://api.mail.gw/messages/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                if (res.status === 401) {
+                    await reauthenticate();
+                    res = await fetch(`https://api.mail.gw/messages/${id}`, {
+                        headers: { 'Authorization': `Bearer ${token}` }
+                    });
+                }
+
+                if (!res.ok) throw new Error("Failed to fetch message body");
+
+                const msg = await res.json();
+                
+                modalSubject.innerText = msg.subject || 'No Subject';
+                modalSender.innerText = `From: ${msg.from?.address || 'Unknown'}`;
+                
+                if (msg.text) {
+                    modalBody.innerText = msg.text;
+                } else if (msg.html) {
+                    if (Array.isArray(msg.html)) {
+                        modalBody.innerHTML = `<iframe srcdoc="${msg.html[0].replace(/"/g, '&quot;')}" class="w-full h-48 bg-white rounded-lg border-0"></iframe>`;
+                    } else {
+                        modalBody.innerHTML = `<iframe srcdoc="${msg.html.replace(/"/g, '&quot;')}" class="w-full h-48 bg-white rounded-lg border-0"></iframe>`;
+                    }
+                } else {
+                    modalBody.innerText = "No readable text found in message.";
+                }
+            } catch (err) {
+                console.error("Read Error:", err);
+                const cached = messageCache[id];
+                if (cached) {
+                    modalSubject.innerText = cached.subject || 'No Subject';
+                    modalSender.innerText = `From: ${cached.from?.address || 'Unknown'}`;
+                    modalBody.innerText = cached.intro || cached.subject || "Could not load full message text.";
+                } else {
+                    modalBody.innerText = "Error loading message body. Please refresh inbox and try again.";
+                }
+            }
         }
 
         async function reauthenticate() {
@@ -220,7 +251,6 @@
                 if (tokenData.token) {
                     token = tokenData.token;
                     localStorage.setItem('nixinbox_token', token);
-                    checkInbox();
                 }
             } catch (err) {
                 console.error("Auth Error:", err);
@@ -247,5 +277,4 @@
         }
     </script>
 </body>
-                </html>
-                            
+</html>
