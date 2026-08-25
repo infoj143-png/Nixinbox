@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
+    <!-- Root & Main App Pages -->
     <url>
         <loc>https://nixinbox.vercel.app/</loc>
         <lastmod>2026-05-20</lastmod>
@@ -9,49 +10,123 @@
     <url>
         <loc>https://nixinbox.vercel.app/blog.html</loc>
         <lastmod>2026-05-20</lastmod>
-        <changefreq>weekly</changefreq>
-        <priority>0.8</priority>
-    </url>
-    <url>
-        <loc>https://nixinbox.vercel.app/blog/online-email-privacy-guide.html</loc>
-        <lastmod>2026-05-20</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-    </url>
-    <url>
-        <loc>https://nixinbox.vercel.app/blog/why-use-disposable-email.html</loc>
-        <lastmod>2026-05-20</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
-    </url>
-    <url>
-        <loc>https://nixinbox.vercel.app/blog/protecting-personal-data.html</loc>
-        <lastmod>2026-05-20</lastmod>
-        <changefreq>monthly</changefreq>
-        <priority>0.7</priority>
+        <changefreq>daily</changefreq>
+        <priority>0.9</priority>
     </url>
     <url>
         <loc>https://nixinbox.vercel.app/about.html</loc>
         <lastmod>2026-05-20</lastmod>
         <changefreq>monthly</changefreq>
-        <priority>0.6</priority>
+        <priority>0.7</priority>
     </url>
     <url>
         <loc>https://nixinbox.vercel.app/privacy.html</loc>
         <lastmod>2026-05-20</lastmod>
         <changefreq>monthly</changefreq>
-        <priority>0.5</priority>
+        <priority>0.6</priority>
     </url>
     <url>
         <loc>https://nixinbox.vercel.app/terms.html</loc>
         <lastmod>2026-05-20</lastmod>
         <changefreq>monthly</changefreq>
-        <priority>0.5</priority>
+        <priority>0.6</priority>
     </url>
     <url>
         <loc>https://nixinbox.vercel.app/contact.html</loc>
         <lastmod>2026-05-20</lastmod>
         <changefreq>monthly</changefreq>
-        <priority>0.5</priority>
+        <priority>0.6</priority>
+    </url>
+
+    <!-- 15 SEO Blog Articles -->
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/online-email-privacy-guide.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/why-use-disposable-email.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/protecting-personal-data.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/temp-mail-for-social-media.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/prevent-inbox-spam-marketing.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/disposable-email-vs-alias.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/temporary-email-qa-testing.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/email-tracking-pixels-explained.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/avoid-data-breaches-identity-theft.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/bypass-spam-filters-safely.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/public-wifi-privacy-security.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/burn-email-after-reading.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/free-temporary-email-services.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/protecting-business-email-address.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
+    </url>
+    <url>
+        <loc>https://nixinbox.vercel.app/blog/complete-guide-disposable-inbox.html</loc>
+        <lastmod>2026-05-20</lastmod>
+        <changefreq>weekly</changefreq>
+        <priority>0.8</priority>
     </url>
 </urlset>

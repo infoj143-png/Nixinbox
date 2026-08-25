@@ -3,9 +3,52 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>About Us - Nixinbox</title>
-    <meta name="description" content="Learn about Nixinbox, our mission for online digital privacy, and how our temporary email utility protects users from email spam.">
+    <title>About Us - Nixinbox Disposable Temporary Email Service</title>
+    <meta name="description" content="Learn about Nixinbox, our mission for online digital privacy, and how our disposable temporary email utility protects users from email spam and data breaches.">
+    <meta name="keywords" content="about nixinbox, disposable email service, online privacy mission, temp mail generator, protect personal inbox">
+    <meta name="robots" content="index, follow">
     <link rel="canonical" href="https://nixinbox.vercel.app/about.html">
+
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://nixinbox.vercel.app/about.html">
+    <meta property="og:title" content="About Us - Nixinbox Disposable Temporary Email Service">
+    <meta property="og:description" content="Discover Nixinbox's mission to preserve digital privacy and shield personal inboxes from spam and tracking.">
+    <meta property="og:image" content="https://nixinbox.vercel.app/og-image.png">
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://nixinbox.vercel.app/about.html">
+    <meta name="twitter:title" content="About Us - Nixinbox Disposable Mail">
+    <meta name="twitter:description" content="Discover Nixinbox's mission to preserve digital privacy and shield personal inboxes from spam and tracking.">
+    <meta name="twitter:image" content="https://nixinbox.vercel.app/og-image.png">
+
+    <!-- JSON-LD Structured Data -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "AboutPage",
+          "@id": "https://nixinbox.vercel.app/about.html/#webpage",
+          "url": "https://nixinbox.vercel.app/about.html",
+          "name": "About Nixinbox",
+          "description": "Learn about Nixinbox and our digital privacy tools.",
+          "isPartOf": {
+            "@id": "https://nixinbox.vercel.app/#website"
+          }
+        },
+        {
+          "@type": "Organization",
+          "@id": "https://nixinbox.vercel.app/#organization",
+          "name": "Nixinbox",
+          "url": "https://nixinbox.vercel.app/",
+          "logo": "https://nixinbox.vercel.app/og-image.png"
+        }
+      ]
+    }
+    </script>
+
     <script src="https://cdn.tailwindcss.com"></script>
 </head>
 <body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col justify-between font-sans selection:bg-blue-500 selection:text-white">
@@ -16,25 +59,25 @@
             <a href="/" class="flex items-center gap-2 text-xl font-black text-white tracking-tight">
                 <span class="text-blue-500">Nix</span>inbox
             </a>
-            <nav class="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-300">
+            <nav class="hidden sm:flex items-center gap-6 text-sm font-medium text-slate-300" aria-label="Primary Navigation">
                 <a href="/" class="hover:text-blue-400 transition">Home</a>
                 <a href="/blog.html" class="hover:text-blue-400 transition">Blog</a>
-                <a href="/about.html" class="hover:text-blue-400 transition">About Us</a>
+                <a href="/about.html" class="text-blue-400 font-semibold transition">About Us</a>
                 <a href="/contact.html" class="hover:text-blue-400 transition">Contact Us</a>
             </nav>
             <div class="sm:hidden flex items-center">
-                <button id="mobileMenuBtn" class="text-slate-300 hover:text-white focus:outline-none" aria-label="Toggle Menu">
+                <button id="mobileMenuBtn" class="text-slate-300 hover:text-white focus:outline-none" aria-label="Toggle Navigation Menu">
                     <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
                 </button>
             </div>
         </div>
         <!-- Mobile Dropdown -->
-        <div id="mobileMenu" class="hidden sm:hidden border-t border-slate-900 bg-slate-950 px-4 py-3 space-y-2 text-sm text-slate-300">
+        <nav id="mobileMenu" class="hidden sm:hidden border-t border-slate-900 bg-slate-950 px-4 py-3 space-y-2 text-sm text-slate-300" aria-label="Mobile Navigation">
             <a href="/" class="block hover:text-blue-400 py-1">Home</a>
             <a href="/blog.html" class="block hover:text-blue-400 py-1">Blog</a>
-            <a href="/about.html" class="block hover:text-blue-400 py-1">About Us</a>
+            <a href="/about.html" class="block text-blue-400 font-semibold py-1">About Us</a>
             <a href="/contact.html" class="block hover:text-blue-400 py-1">Contact Us</a>
-        </div>
+        </nav>
     </header>
 
     <!-- Main Content -->
@@ -42,42 +85,42 @@
         <article class="bg-slate-900/60 border border-slate-800 rounded-2xl p-6 sm:p-10 shadow-xl space-y-8">
             <header class="border-b border-slate-800 pb-6 text-center sm:text-left">
                 <div class="inline-block bg-blue-600/10 border border-blue-500/20 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full mb-3">
-                    Privacy & Utility Tool
+                    Privacy & Digital Security Tool
                 </div>
                 <h1 class="text-3xl sm:text-4xl font-extrabold text-white mb-2">About Nixinbox</h1>
-                <p class="text-slate-400 text-base max-w-2xl">Empowering individuals with instant, secure, and disposable email solutions to maintain inbox hygiene and digital privacy.</p>
+                <p class="text-slate-400 text-base max-w-2xl">Empowering individuals with instant, secure, and disposable temporary email solutions to maintain inbox hygiene and protect personal data online.</p>
             </header>
 
             <section class="space-y-6 text-slate-300 leading-relaxed text-sm sm:text-base">
-                <h2 class="text-2xl font-bold text-white">Our Mission</h2>
-                <p>In today's interconnected digital landscape, almost every website, app, or online forum requires an email verification step before granting access. Unfortunately, sharing your primary personal email address often opens the floodgates to persistent promotional marketing, newsletters, data brokers, and security breaches.</p>
-                <p>Nixinbox was built to solve this exact problem. Our mission is to give users total control over their digital footprint by providing instant, free, and ephemeral disposable email addresses on demand.</p>
+                <h2 class="text-2xl font-bold text-white">Our Mission for Online Privacy</h2>
+                <p>In today's interconnected digital ecosystem, virtually every website, app, or online platform requires an email verification step before granting access. Unfortunately, sharing your primary personal email address often opens the floodgates to persistent promotional newsletters, marketing cold calls, data brokers, and corporate security leaks.</p>
+                <p>Nixinbox was created to solve this exact challenge. Our mission is to grant users complete control over their digital identity by offering instant, free, and ephemeral disposable email addresses on demand.</p>
 
-                <h2 class="text-2xl font-bold text-white">Why Use Nixinbox?</h2>
+                <h2 class="text-2xl font-bold text-white">Core Value Propositions</h2>
                 <div class="grid sm:grid-cols-2 gap-4 my-6">
-                    <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl">
-                        <div class="text-blue-400 text-xl font-bold mb-2">🛡️ Spam Defense</div>
-                        <p class="text-xs sm:text-sm text-slate-400">Keep unwanted newsletters, promotional spam, and marketing cold calls completely away from your primary mailbox.</p>
-                    </div>
-                    <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl">
-                        <div class="text-blue-400 text-xl font-bold mb-2">⚡ Instant & Anonymous</div>
-                        <p class="text-xs sm:text-sm text-slate-400">No passwords, signups, or forms required. Generate temporary inboxes in a single click with zero tracking.</p>
-                    </div>
-                    <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl">
-                        <div class="text-blue-400 text-xl font-bold mb-2">🔒 Privacy Preserved</div>
-                        <p class="text-xs sm:text-sm text-slate-400">Messages and tokens clear automatically, protecting your identity during online verifications or service testing.</p>
-                    </div>
-                    <div class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl">
-                        <div class="text-blue-400 text-xl font-bold mb-2">💻 Developer Friendly</div>
-                        <p class="text-xs sm:text-sm text-slate-400">Perfect for QA engineers, developers, and testers looking to verify registration flows rapidly.</p>
-                    </div>
+                    <article class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl">
+                        <h3 class="text-blue-400 text-lg font-bold mb-2">🛡️ Spam Defense</h3>
+                        <p class="text-xs sm:text-sm text-slate-400">Keep unwanted newsletters, promotional spam, and marketing bots far away from your primary personal mailbox.</p>
+                    </article>
+                    <article class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl">
+                        <h3 class="text-blue-400 text-lg font-bold mb-2">⚡ Instant & Anonymous</h3>
+                        <p class="text-xs sm:text-sm text-slate-400">No passwords, signups, or personal profiles required. Generate temporary inboxes in a single click with zero tracking.</p>
+                    </article>
+                    <article class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl">
+                        <h3 class="text-blue-400 text-lg font-bold mb-2">🔒 Ephemeral Security</h3>
+                        <p class="text-xs sm:text-sm text-slate-400">Messages and temporary mailbox tokens expire automatically, safeguarding your identity during verifications.</p>
+                    </article>
+                    <article class="bg-slate-950/60 border border-slate-800/80 p-5 rounded-xl">
+                        <h3 class="text-blue-400 text-lg font-bold mb-2">💻 Developer & QA Ready</h3>
+                        <p class="text-xs sm:text-sm text-slate-400">Ideal for QA engineers, developers, and testers who need to verify sign-up workflows rapidly without cluttering real inboxes.</p>
+                    </article>
                 </div>
 
-                <h2 class="text-2xl font-bold text-white">How It Works</h2>
-                <p>Nixinbox integrates directly with public Mail.tm infrastructure APIs to create temporary email mailboxes on active domains. The application handles account generation and authentication seamlessly in your browser background, continuously checking for incoming messages while keeping your experience fast and distraction-free.</p>
+                <h2 class="text-2xl font-bold text-white">How Nixinbox Operates</h2>
+                <p>Nixinbox integrates directly with high-performance public email infrastructure APIs to provision temporary mailboxes on active web domains. The application manages account creation and authentication seamlessly in your browser background, continuously checking for incoming messages while keeping your user experience fast, clean, and distraction-free.</p>
 
-                <h2 class="text-2xl font-bold text-white">Commitment to Quality & Ad Compliance</h2>
-                <p>Nixinbox is committed to strict user safety and web transparency standards. We comply with digital privacy standards and Google AdSense publisher policies, ensuring clear isolation between content features and promotional areas for a reliable user experience.</p>
+                <h2 class="text-2xl font-bold text-white">Commitment to Quality & Publisher Compliance</h2>
+                <p>Nixinbox adheres to strict digital safety standards and Google AdSense publisher policies. We maintain complete separation between tool interactive elements and advertisement containers, ensuring an ad-safe environment that respects user intent and privacy. Learn more by checking out our <a href="/privacy.html" class="text-blue-400 underline hover:text-blue-300">Privacy Policy</a> and <a href="/terms.html" class="text-blue-400 underline hover:text-blue-300">Terms of Service</a>.</p>
             </section>
         </article>
     </main>
@@ -88,12 +131,12 @@
             <div>
                 &copy; <span id="year">2026</span> Nixinbox. All rights reserved.
             </div>
-            <div class="flex flex-wrap justify-center gap-4 text-slate-400">
+            <nav class="flex flex-wrap justify-center gap-4 text-slate-400" aria-label="Footer Navigation">
                 <a href="/privacy.html" class="hover:text-blue-400 transition">Privacy Policy</a>
                 <a href="/terms.html" class="hover:text-blue-400 transition">Terms of Service</a>
                 <a href="/about.html" class="hover:text-blue-400 transition">About Us</a>
                 <a href="/contact.html" class="hover:text-blue-400 transition">Contact Us</a>
-            </div>
+            </nav>
         </div>
     </footer>
 
