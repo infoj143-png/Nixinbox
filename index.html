@@ -128,64 +128,64 @@
     </div>
 
     <!-- Main Container -->
-    <main class="max-w-2xl mx-auto px-4 py-6 w-full flex-grow space-y-8">
+    <main class="max-w-2xl mx-auto px-4 py-4 sm:py-6 w-full flex-grow space-y-4 sm:space-y-6">
         <!-- Hero Header Section -->
         <section class="text-center">
-            <div class="inline-block bg-blue-600/10 border border-blue-500/20 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full mb-3">
+            <div class="inline-block bg-blue-600/10 border border-blue-500/20 text-blue-400 text-xs font-semibold px-3 py-1 rounded-full mb-2 sm:mb-3">
                 Secure & Anonymous Online Mail
             </div>
-            <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-white mb-2">Disposable Temporary Email Generator</h1>
-            <p class="text-slate-400 text-sm max-w-md mx-auto">Instant throwaway email addresses for web signups, account verifications, and online privacy protection.</p>
+            <h1 class="text-2xl sm:text-4xl font-black tracking-tight text-white mb-1.5 sm:mb-2">Disposable Temporary Email Generator</h1>
+            <p class="text-slate-400 text-xs sm:text-sm max-w-md mx-auto">Instant throwaway email addresses for web signups, account verifications, and online privacy protection.</p>
         </section>
 
         <!-- Email Generator Box -->
-        <section class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 shadow-2xl" aria-label="Temp Email Generator">
-            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-3">Your Temporary Email Address</h2>
-            <div class="flex flex-col sm:flex-row gap-3">
-                <input type="text" id="emailDisplay" readonly class="bg-slate-950 border border-slate-700/80 rounded-xl px-4 py-3.5 text-blue-400 font-mono text-sm w-full select-all focus:outline-none shadow-inner" value="Initializing..." aria-label="Generated Temporary Email Address">
+        <section class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xl" aria-label="Temp Email Generator">
+            <h2 class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2 sm:mb-3">Your Temporary Email Address</h2>
+            <div class="flex flex-col sm:flex-row gap-2.5 sm:gap-3">
+                <input type="text" id="emailDisplay" readonly class="bg-slate-950 border border-slate-700/80 rounded-xl px-3.5 sm:px-4 py-2.5 sm:py-3.5 text-blue-400 font-mono text-sm w-full select-all focus:outline-none shadow-inner" value="Initializing..." aria-label="Generated Temporary Email Address">
                 <div class="flex gap-2">
-                    <button id="copyBtn" onclick="copyEmail()" class="bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-medium px-5 py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-1.5 cursor-pointer">
+                    <button id="copyBtn" onclick="copyEmail()" class="flex-1 sm:flex-initial bg-blue-600 hover:bg-blue-500 active:scale-95 text-white font-medium px-4 sm:px-5 py-2.5 sm:py-3.5 rounded-xl text-sm transition-all shadow-lg shadow-blue-600/20 flex items-center justify-center gap-1.5 cursor-pointer">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 16H6a2 2 0 01-2-2V6a2 2 0 012-2h8a2 2 0 022 2v2m-6 12h8a2 2 0 002-2v-8a2 2 0 00-2-2h-8a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
                         Copy
                     </button>
-                    <button onclick="generateNewEmail()" class="bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-medium px-4 py-3.5 rounded-xl text-sm transition-all border border-slate-700 cursor-pointer" title="Generate New Email">
+                    <button onclick="generateNewEmail()" class="flex-1 sm:flex-initial bg-slate-800 hover:bg-slate-700 active:scale-95 text-slate-200 font-medium px-4 py-2.5 sm:py-3.5 rounded-xl text-sm transition-all border border-slate-700 cursor-pointer" title="Generate New Email">
                         New
                     </button>
                 </div>
             </div>
-            <p class="text-xs text-slate-500 mt-3 flex items-center gap-1">
+            <p class="text-xs text-slate-500 mt-2.5 sm:mt-3 flex items-center gap-1">
                 <span>🔒</span> Active until you click "New". Safe to leave open for incoming verification codes!
             </p>
         </section>
 
+        <!-- Inbox Section -->
+        <section class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-4 sm:p-6 shadow-2xl" aria-label="Temporary Mail Inbox">
+            <div class="flex justify-between items-center mb-3 sm:mb-5">
+                <div class="flex items-center gap-2">
+                    <h2 class="text-base sm:text-lg font-bold text-white">Temporary Inbox</h2>
+                    <span id="msgCount" class="bg-blue-500/10 text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-blue-500/20">0</span>
+                </div>
+                <button onclick="fetchMessages()" class="text-xs text-blue-400 hover:text-blue-300 font-medium bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
+                    🔄 Refresh Inbox
+                </button>
+            </div>
+            
+            <div id="inboxList" class="divide-y divide-slate-800/60 max-h-[300px] sm:max-h-[380px] overflow-y-auto pr-1">
+                <div class="text-center py-6 sm:py-12 text-slate-500 text-sm">
+                    <div class="text-2xl sm:text-3xl mb-1.5 sm:mb-2">📭</div>
+                    Waiting for incoming verification messages...
+                </div>
+            </div>
+        </section>
+
         <!-- Adsterra Native Ad Container -->
-        <aside class="ad-container bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 text-center min-h-[100px] flex flex-col justify-center items-center my-6 mx-auto w-full overflow-hidden" aria-label="Advertisement">
+        <aside class="ad-container bg-slate-900/40 border border-slate-800/80 rounded-xl p-3 text-center min-h-[100px] max-w-md max-h-[250px] flex flex-col justify-center items-center mx-auto w-full overflow-hidden" aria-label="Advertisement">
             <span class="text-[10px] uppercase font-semibold text-slate-500 tracking-wider mb-2 block">Sponsored Content</span>
             <div id="adsterra-native-ad" class="w-full flex justify-center items-center">
                 <script async="async" data-cfasync="false" src="https://pl31019246.profitableratecpmnetwork.com/ae9835ccb84019e3456b7f23395f5777/invoke.js"></script>
                 <div id="container-ae9835ccb84019e3456b7f23395f5777" class="w-full"></div>
             </div>
         </aside>
-
-        <!-- Inbox Section -->
-        <section class="bg-slate-900/80 backdrop-blur-xl border border-slate-800 rounded-2xl p-6 shadow-2xl" aria-label="Temporary Mail Inbox">
-            <div class="flex justify-between items-center mb-5">
-                <div class="flex items-center gap-2">
-                    <h2 class="text-lg font-bold text-white">Temporary Inbox</h2>
-                    <span id="msgCount" class="bg-blue-500/10 text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-blue-500/20">0</span>
-                </div>
-                <button onclick="fetchMessages()" class="text-xs text-blue-400 hover:text-blue-300 font-medium bg-blue-500/10 hover:bg-blue-500/20 border border-blue-500/20 px-3 py-1.5 rounded-lg transition flex items-center gap-1.5 cursor-pointer">
-                    🔄 Refresh Inbox
-                </button>
-            </div>
-            
-            <div id="inboxList" class="divide-y divide-slate-800/60 max-h-[380px] overflow-y-auto pr-1">
-                <div class="text-center py-12 text-slate-500 text-sm">
-                    <div class="text-3xl mb-2">📭</div>
-                    Waiting for incoming verification messages...
-                </div>
-            </div>
-        </section>
 
         <!-- Features & SEO Content Section -->
         <section class="bg-slate-900/40 border border-slate-800/80 rounded-2xl p-6 space-y-6">
