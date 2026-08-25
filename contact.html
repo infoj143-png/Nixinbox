@@ -42,8 +42,16 @@
           "@type": "Organization",
           "@id": "https://nixinbox.vercel.app/#organization",
           "name": "Nixinbox",
-          "url": "https://nixinbox.vercel.app/",
-          "logo": "https://nixinbox.vercel.app/og-image.png"
+          "url": "https://nixinbox.vercel.app",
+          "logo": "https://nixinbox.vercel.app/og-image.png",
+          "contactPoint": {
+            "@type": "ContactPoint",
+            "telephone": "+923446110659",
+            "email": "infoj.j143@gmail.com",
+            "contactType": "customer service",
+            "areaServed": "Worldwide",
+            "availableLanguage": ["English", "Urdu"]
+          }
         }
       ]
     }
@@ -102,7 +110,14 @@
                         <div class="text-blue-400 font-semibold mb-1 flex items-center gap-2">
                             <span>📧</span> Direct Email
                         </div>
-                        <p class="text-slate-400 text-xs">support@nixinbox.vercel.app</p>
+                        <a href="mailto:infoj.j143@gmail.com" class="text-slate-400 text-xs hover:text-blue-400 transition">infoj.j143@gmail.com</a>
+                    </div>
+
+                    <div class="bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl">
+                        <div class="text-blue-400 font-semibold mb-1 flex items-center gap-2">
+                            <span>📞</span> Phone Number
+                        </div>
+                        <a href="tel:+923446110659" class="text-slate-400 text-xs hover:text-blue-400 transition">+923446110659</a>
                     </div>
 
                     <div class="bg-slate-950/60 border border-slate-800/80 p-4 rounded-xl">
@@ -122,29 +137,29 @@
 
                 <!-- Functional Form Layout -->
                 <section class="md:col-span-2">
-                    <form id="contactForm" onsubmit="handleContactSubmit(event)" class="space-y-5">
-                        <div id="formSuccessAlert" class="hidden bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 p-4 rounded-xl text-sm">
-                            ✓ Thank you for reaching out! Your message has been recorded successfully.
-                        </div>
+                    <form id="contactForm" action="https://formsubmit.co/infoj.j143@gmail.com" method="POST" class="space-y-5">
+                        <input type="hidden" name="_subject" value="New Contact Inquiry - Nixinbox">
+                        <input type="hidden" name="_template" value="table">
+                        <input type="hidden" name="_captcha" value="false">
 
                         <div>
                             <label for="name" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Your Name</label>
-                            <input type="text" id="name" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="John Doe">
+                            <input type="text" id="name" name="name" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="John Doe">
                         </div>
 
                         <div>
                             <label for="email" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Email Address</label>
-                            <input type="email" id="email" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="name@example.com">
+                            <input type="email" id="email" name="email" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="name@example.com">
                         </div>
 
                         <div>
                             <label for="subject" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Subject</label>
-                            <input type="text" id="subject" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Inquiry regarding Nixinbox">
+                            <input type="text" id="subject" name="subject" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Inquiry regarding Nixinbox">
                         </div>
 
                         <div>
                             <label for="message" class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-2">Message</label>
-                            <textarea id="message" rows="5" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Write your message here..."></textarea>
+                            <textarea id="message" name="message" rows="5" required class="w-full bg-slate-950 border border-slate-800 rounded-xl px-4 py-3 text-slate-100 text-sm focus:outline-none focus:border-blue-500 transition" placeholder="Write your message here..."></textarea>
                         </div>
 
                         <button type="submit" id="submitBtn" class="w-full bg-blue-600 hover:bg-blue-500 text-white font-semibold py-3 px-6 rounded-xl text-sm transition shadow-lg shadow-blue-600/20 cursor-pointer">
@@ -176,22 +191,6 @@
         document.getElementById('mobileMenuBtn').addEventListener('click', () => {
             document.getElementById('mobileMenu').classList.toggle('hidden');
         });
-
-        function handleContactSubmit(event) {
-            event.preventDefault();
-            const submitBtn = document.getElementById('submitBtn');
-            const alertBox = document.getElementById('formSuccessAlert');
-
-            submitBtn.disabled = true;
-            submitBtn.innerText = 'Sending...';
-
-            setTimeout(() => {
-                alertBox.classList.remove('hidden');
-                document.getElementById('contactForm').reset();
-                submitBtn.disabled = false;
-                submitBtn.innerText = 'Send Message';
-            }, 800);
-        }
     </script>
 </body>
 </html>
