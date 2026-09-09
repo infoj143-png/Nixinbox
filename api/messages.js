@@ -29,7 +29,13 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
-    const { login, domain, id } = req.query || {};
+    let { login, domain, email, id } = req.query || {};
+
+    if ((!login || !domain) && email && email.includes('@')) {
+        const parts = email.split('@');
+        login = parts[0];
+        domain = parts[1];
+    }
 
     // 1secmail proxy logic
     if (login && domain) {

@@ -379,15 +379,64 @@ async function generateNewEmail(preferredDomain = null) {
 }
 
 let pollInterval = null;
+let readMessageIds = new Set();
+
+function is1secmailProvider() {
+    if (window.currentProvider === '1secmail') return true;
+    if (window.currentEmail && window.currentEmail.includes('@')) {
+        const domain = window.currentEmail.split('@')[1].toLowerCase();
+        return domain.includes('1secmail');
+    }
+    return false;
+}
+
 function startPolling() {
     if (pollInterval) clearInterval(pollInterval);
-    pollInterval = setInterval(fetchMessages, 10000);
+    pollInterval = setInterval(fetchMessages, 4000);
+}
+
+async function refreshInbox() {
+    startPolling();
+    return await fetchMessages();
+}
+
+function parseMessageDate(dateStr) {
+    if (!dateStr) return new Date().toISOString();
+    if (typeof dateStr !== 'string') return new Date(dateStr).toISOString();
+    const formatted = dateStr.replace(' ', 'T') + (dateStr.includes('Z') ? '' : 'Z');
+    const d = new Date(formatted);
+    return isNaN(d.getTime()) ? new Date().toISOString() : d.toISOString();
+}
+
+function loadReadState() {
+    if (!window.currentEmail) return;
+    try {
+        const saved = getItemSafe(`nixinbox_read_${window.currentEmail}`);
+        if (saved) {
+            readMessageIds = new Set(JSON.parse(saved));
+        } else {
+            readMessageIds = new Set();
+        }
+    } catch (e) {
+        readMessageIds = new Set();
+    }
+}
+
+function markMessageRead(id) {
+    if (!id) return;
+    readMessageIds.add(String(id));
+    if (window.currentEmail) {
+        try {
+            setItemSafe(`nixinbox_read_${window.currentEmail}`, JSON.stringify([...readMessageIds]));
+        } catch (e) {}
+    }
 }
 
 async function fetchMessages() {
     if (!window.currentEmail) return false;
+    loadReadState();
 
-    if (window.currentProvider === '1secmail' || (window.currentEmail && window.currentEmail.includes('1secmail'))) {
+    if (is1secmailProvider()) {
         try {
             const parts = window.currentEmail.split('@');
             const login = parts[0];
@@ -402,7 +451,7 @@ async function fetchMessages() {
                 from: { name: item.from, address: item.from },
                 subject: item.subject,
                 intro: '',
-                createdAt: item.date ? new Date(item.date).toISOString() : new Date().toISOString()
+                createdAt: parseMessageDate(item.date)
             }));
             renderInbox(messages);
             return true;
@@ -425,7 +474,14 @@ async function fetchMessages() {
         }
         if (!res.ok) return false;
         const data = await res.json();
-        const messages = data['hydra:member'] || (Array.isArray(data) ? data : (data.messages || []));
+        const rawList = data['hydra:member'] || (Array.isArray(data) ? data : (data.messages || []));
+        const messages = rawList.map(item => ({
+            id: item.id,
+            from: item.from || { name: 'Unknown', address: 'Unknown' },
+            subject: item.subject || '(No Subject)',
+            intro: item.intro || '',
+            createdAt: parseMessageDate(item.createdAt || item.date)
+        }));
         renderInbox(messages);
         return true;
     } catch (err) {
@@ -441,25 +497,48 @@ function renderInbox(messages) {
 
     if (!inboxList) return;
 
-    if (msgCount) msgCount.innerText = messages ? messages.length : 0;
+    const totalCount = messages ? messages.length : 0;
+    const unreadCount = messages ? messages.filter(m => !readMessageIds.has(String(m.id))).length : 0;
+
+    if (msgCount) {
+        if (unreadCount > 0) {
+            msgCount.innerText = `${unreadCount} new (${totalCount})`;
+            msgCount.className = "bg-emerald-500/20 text-emerald-400 text-xs font-bold px-2.5 py-0.5 rounded-full border border-emerald-500/30 animate-pulse";
+        } else {
+            msgCount.innerText = `${totalCount}`;
+            msgCount.className = "bg-blue-500/10 text-blue-400 text-xs font-semibold px-2.5 py-0.5 rounded-full border border-blue-500/20";
+        }
+    }
 
     if (!messages || messages.length === 0) {
         inboxList.innerHTML = `<div class="text-center py-12 text-slate-500 text-sm"><div class="text-3xl mb-2">📭</div>Waiting for incoming messages...</div>`;
         return;
     }
 
-    inboxList.innerHTML = messages.map(msg => `
-        <div onclick="readMessage('${msg.id}')" class="py-3 px-3 hover:bg-slate-800/50 cursor-pointer transition flex justify-between items-center rounded-xl my-1 group">
-            <div class="pr-2">
-                <div class="text-sm font-semibold text-white group-hover:text-blue-400 transition">${escapeHtml(msg.from?.name || msg.from?.address || 'Unknown')}</div>
-                <div class="text-xs text-slate-400 truncate max-w-xs">${escapeHtml(msg.subject || '(No Subject)')} ${msg.intro ? '- ' + escapeHtml(msg.intro) : ''}</div>
+    inboxList.innerHTML = messages.map(msg => {
+        const isRead = readMessageIds.has(String(msg.id));
+        const unreadDot = isRead ? '' : `<span class="w-2 h-2 rounded-full bg-blue-500 inline-block mr-2 shadow-sm shadow-blue-500/50 flex-shrink-0" title="Unread"></span>`;
+        const bgClass = isRead ? 'bg-slate-900/40 hover:bg-slate-800/50' : 'bg-slate-800/80 hover:bg-slate-800 border-l-2 border-blue-500';
+
+        return `
+            <div onclick="readMessage('${msg.id}')" class="py-3 px-3.5 ${bgClass} cursor-pointer transition flex justify-between items-center rounded-xl my-1.5 group shadow-sm">
+                <div class="pr-2 min-w-0 flex-1">
+                    <div class="flex items-center text-sm font-semibold text-white group-hover:text-blue-400 transition truncate">
+                        ${unreadDot}${escapeHtml(msg.from?.name || msg.from?.address || 'Unknown')}
+                    </div>
+                    <div class="text-xs text-slate-300 font-medium truncate mt-0.5">${escapeHtml(msg.subject || '(No Subject)')}</div>
+                    ${msg.intro ? `<div class="text-xs text-slate-400 truncate mt-0.5">${escapeHtml(msg.intro)}</div>` : ''}
+                </div>
+                <div class="text-xs text-slate-500 whitespace-nowrap ml-2">${new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
             </div>
-            <div class="text-xs text-slate-500 whitespace-nowrap">${new Date(msg.createdAt).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 }
 
 async function readMessage(id) {
+    markMessageRead(id);
+    fetchMessages();
+
     const modal = document.getElementById('messageModal');
     const modalSubject = document.getElementById('modalSubject');
     const modalSender = document.getElementById('modalSender');
@@ -473,14 +552,14 @@ async function readMessage(id) {
 
     modal.classList.remove('hidden');
 
-    if (window.currentProvider === '1secmail' || (window.currentEmail && window.currentEmail.includes('1secmail'))) {
+    if (is1secmailProvider()) {
         try {
             const parts = window.currentEmail.split('@');
             const login = parts[0];
             const domain = parts[1];
 
             const res = await fetch(`${API_BASE}/messages?login=${encodeURIComponent(login)}&domain=${encodeURIComponent(domain)}&id=${encodeURIComponent(id)}`);
-            if (!res.ok) throw new Error("Failed to load 1secmail message content");
+            if (!res.ok) throw new Error("Failed to load message content");
 
             const msg = await res.json();
 
@@ -489,12 +568,12 @@ async function readMessage(id) {
 
             if (modalBody) {
                 if (msg.htmlBody) {
-                    let fixedHtml = msg.htmlBody.replace(/<a\s+([^>]*\s+)?href=/gi, '<a target="_blank" $1 href=');
+                    let fixedHtml = msg.htmlBody.replace(/<a\s+([^>]*\s+)?href=/gi, '<a target="_blank" rel="noopener" $1 href=');
                     modalBody.innerHTML = `<iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" srcdoc="${fixedHtml.replace(/"/g, '&quot;')}" class="w-full h-72 bg-white rounded-lg border-0"></iframe>`;
                 } else if (msg.textBody || msg.body) {
                     let text = escapeHtml(msg.textBody || msg.body);
                     let linkedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" class="text-blue-400 underline font-semibold">$1</a>');
-                    modalBody.innerHTML = `<div class="whitespace-pre-wrap text-sm text-slate-200">${linkedText}</div>`;
+                    modalBody.innerHTML = `<div class="whitespace-pre-wrap text-sm text-slate-200 font-mono select-all">${linkedText}</div>`;
                 } else {
                     modalBody.innerText = "No readable content found in message.";
                 }
@@ -522,12 +601,12 @@ async function readMessage(id) {
         if (modalBody) {
             if (msg.html && (Array.isArray(msg.html) ? msg.html.length > 0 : true)) {
                 let htmlContent = Array.isArray(msg.html) ? msg.html[0] : msg.html;
-                let fixedHtml = htmlContent.replace(/<a\s+([^>]*\s+)?href=/gi, '<a target="_blank" $1 href=');
+                let fixedHtml = htmlContent.replace(/<a\s+([^>]*\s+)?href=/gi, '<a target="_blank" rel="noopener" $1 href=');
                 modalBody.innerHTML = `<iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" srcdoc="${fixedHtml.replace(/"/g, '&quot;')}" class="w-full h-72 bg-white rounded-lg border-0"></iframe>`;
             } else if (msg.text) {
                 let text = escapeHtml(msg.text);
                 let linkedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" class="text-blue-400 underline font-semibold">$1</a>');
-                modalBody.innerHTML = `<div class="whitespace-pre-wrap text-sm text-slate-200">${linkedText}</div>`;
+                modalBody.innerHTML = `<div class="whitespace-pre-wrap text-sm text-slate-200 font-mono select-all">${linkedText}</div>`;
             } else {
                 modalBody.innerText = "No readable content found in message.";
             }
