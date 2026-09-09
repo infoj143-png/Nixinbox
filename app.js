@@ -1,5 +1,5 @@
 const API_BASE = '/api';
-const FALLBACK_DOMAINS = ['uberip.com', 'mail.tm', 'mail.gw'];
+const FALLBACK_DOMAINS = ['1secmail.com', '1secmail.org', '1secmail.net'];
 
 const BLACKLISTED_KEYWORDS = [
     'guerrillamail',
@@ -138,26 +138,31 @@ async function initApp() {
         await populateDomainDropdown();
 
         if (savedEmail && savedToken) {
-            window.currentToken = savedToken;
-            window.currentEmail = savedEmail;
-            window.currentProvider = savedProvider || 'primary';
-            emailDisplay.value = savedEmail;
-
-            const select = document.getElementById('domainSelect');
-            if (select && savedEmail.includes('@')) {
-                const savedDomain = savedEmail.split('@')[1];
-                if ([...select.options].some(opt => opt.value === savedDomain)) {
-                    select.value = savedDomain;
-                }
-            }
-
-            const messagesOk = await fetchMessages();
-            if (messagesOk) {
-                startPolling();
-                return;
-            } else {
-                console.warn("Saved session invalid or network fetch error. Resetting session...");
+            const savedDomain = savedEmail.includes('@') ? savedEmail.split('@')[1] : null;
+            if (savedDomain && !isCleanDomain(savedDomain)) {
+                console.warn("Saved email domain is blacklisted. Purging saved session...");
                 clearSession();
+            } else {
+                window.currentToken = savedToken;
+                window.currentEmail = savedEmail;
+                window.currentProvider = savedProvider || 'primary';
+                emailDisplay.value = savedEmail;
+
+                const select = document.getElementById('domainSelect');
+                if (select && savedDomain) {
+                    if ([...select.options].some(opt => opt.value === savedDomain)) {
+                        select.value = savedDomain;
+                    }
+                }
+
+                const messagesOk = await fetchMessages();
+                if (messagesOk) {
+                    startPolling();
+                    return;
+                } else {
+                    console.warn("Saved session invalid or network fetch error. Resetting session...");
+                    clearSession();
+                }
             }
         }
 
@@ -219,8 +224,6 @@ async function fetchDomains() {
                     const cleanNames = domainNames.filter(isCleanDomain);
                     if (cleanNames.length > 0) {
                         return cleanNames;
-                    } else if (domainNames.length > 0) {
-                        return domainNames;
                     }
                 }
             }
@@ -265,74 +268,66 @@ async function generateNewEmail(preferredDomain = null) {
         let createdAccount = null;
         let lastError = null;
 
+        const is1secmail = (dom) => dom.includes('1secmail');
+
         for (const domain of candidateDomains) {
             try {
                 const username = generateCleanUsername();
                 const address = `${username}@${domain}`;
-                const password = generateCleanPassword();
 
-                if (emailDisplay) emailDisplay.value = "Creating account...";
+                if (is1secmail(domain)) {
+                    if (emailDisplay) emailDisplay.value = "Creating inbox...";
+                    createdAccount = {
+                        email: address,
+                        token: `1secmail_${username}_${domain}`,
+                        provider: '1secmail'
+                    };
+                    break;
+                } else {
+                    const password = generateCleanPassword();
 
-                const accRes = await fetchWithTimeout(`${API_BASE}/accounts`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ address, password })
-                }, 7000);
+                    if (emailDisplay) emailDisplay.value = "Creating account...";
 
-                if (!accRes.ok) {
-                    const errJson = await accRes.json().catch(() => ({}));
-                    throw new Error(errJson.message || errJson.error || `Account creation failed (${accRes.status})`);
+                    const accRes = await fetchWithTimeout(`${API_BASE}/accounts`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ address, password })
+                    }, 7000);
+
+                    if (!accRes.ok) {
+                        const errJson = await accRes.json().catch(() => ({}));
+                        throw new Error(errJson.message || errJson.error || `Account creation failed (${accRes.status})`);
+                    }
+
+                    if (emailDisplay) emailDisplay.value = "Authenticating...";
+
+                    const tokenRes = await fetchWithTimeout(`${API_BASE}/token`, {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                            'Accept': 'application/json'
+                        },
+                        body: JSON.stringify({ address, password })
+                    }, 7000);
+
+                    if (!tokenRes.ok) throw new Error(`Token failed (${tokenRes.status})`);
+                    const tokenData = await tokenRes.json();
+
+                    if (!tokenData.token) throw new Error("Token missing in response");
+
+                    createdAccount = {
+                        email: address,
+                        token: tokenData.token,
+                        provider: 'primary'
+                    };
+                    break;
                 }
-
-                if (emailDisplay) emailDisplay.value = "Authenticating...";
-
-                const tokenRes = await fetchWithTimeout(`${API_BASE}/token`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Accept': 'application/json'
-                    },
-                    body: JSON.stringify({ address, password })
-                }, 7000);
-
-                if (!tokenRes.ok) throw new Error(`Token failed (${tokenRes.status})`);
-                const tokenData = await tokenRes.json();
-
-                if (!tokenData.token) throw new Error("Token missing in response");
-
-                createdAccount = {
-                    email: address,
-                    token: tokenData.token,
-                    provider: 'primary'
-                };
-                break;
             } catch (err) {
                 console.warn(`Failed creating email on domain ${domain}:`, err);
                 lastError = err;
-            }
-        }
-
-        // Secondary provider fallback (Guerrilla Mail) if all primary domains failed
-        if (!createdAccount) {
-            console.warn("Primary account creation failed across all domains. Attempting fallback provider...");
-            try {
-                if (emailDisplay) emailDisplay.value = "Creating inbox...";
-                const fallbackRes = await fetchWithTimeout('https://api.guerrillamail.com/ajax.php?f=get_email_address', {}, 7000);
-                if (fallbackRes.ok) {
-                    const gData = await fallbackRes.json();
-                    if (gData && gData.email_addr && gData.sid_token) {
-                        createdAccount = {
-                            email: gData.email_addr,
-                            token: gData.sid_token,
-                            provider: 'guerrillamail'
-                        };
-                    }
-                }
-            } catch (gErr) {
-                console.warn("Fallback provider creation failed:", gErr);
             }
         }
 
@@ -353,7 +348,9 @@ async function generateNewEmail(preferredDomain = null) {
         // Sync dropdown selection with created domain
         const select = document.getElementById('domainSelect');
         if (select) {
-            select.innerHTML = availableDomainsList.map(d => `<option value="${escapeHtml(d)}">@${escapeHtml(d)}</option>`).join('');
+            if (availableDomainsList && availableDomainsList.length > 0) {
+                select.innerHTML = availableDomainsList.map(d => `<option value="${escapeHtml(d)}">@${escapeHtml(d)}</option>`).join('');
+            }
             if (createdAccount.email.includes('@')) {
                 const activeDom = createdAccount.email.split('@')[1];
                 if ([...select.options].some(opt => opt.value === activeDom)) {
@@ -388,28 +385,34 @@ function startPolling() {
 }
 
 async function fetchMessages() {
-    if (!window.currentToken) return false;
+    if (!window.currentEmail) return false;
 
-    if (window.currentProvider === 'guerrillamail') {
+    if (window.currentProvider === '1secmail' || (window.currentEmail && window.currentEmail.includes('1secmail'))) {
         try {
-            const res = await fetch(`https://api.guerrillamail.com/ajax.php?f=check_email&seq=0&sid_token=${encodeURIComponent(window.currentToken)}`);
+            const parts = window.currentEmail.split('@');
+            const login = parts[0];
+            const domain = parts[1];
+
+            const res = await fetch(`${API_BASE}/messages?login=${encodeURIComponent(login)}&domain=${encodeURIComponent(domain)}`);
             if (!res.ok) return false;
             const data = await res.json();
-            const rawList = data.list || [];
+            const rawList = Array.isArray(data) ? data : [];
             const messages = rawList.map(item => ({
-                id: item.mail_id,
-                from: { name: item.mail_from, address: item.mail_from },
-                subject: item.mail_subject,
-                intro: item.mail_excerpt,
-                createdAt: item.mail_timestamp ? new Date(item.mail_timestamp * 1000).toISOString() : new Date().toISOString()
+                id: item.id,
+                from: { name: item.from, address: item.from },
+                subject: item.subject,
+                intro: '',
+                createdAt: item.date ? new Date(item.date).toISOString() : new Date().toISOString()
             }));
             renderInbox(messages);
             return true;
         } catch (err) {
-            console.error("Fetch Guerrilla Messages Error:", err);
+            console.error("Fetch 1secmail Messages Error:", err);
             return false;
         }
     }
+
+    if (!window.currentToken) return false;
 
     try {
         const res = await fetch(`${API_BASE}/messages`, {
@@ -470,33 +473,35 @@ async function readMessage(id) {
 
     modal.classList.remove('hidden');
 
-    if (window.currentProvider === 'guerrillamail') {
+    if (window.currentProvider === '1secmail' || (window.currentEmail && window.currentEmail.includes('1secmail'))) {
         try {
-            const res = await fetch(`https://api.guerrillamail.com/ajax.php?f=fetch_email&email_id=${encodeURIComponent(id)}&sid_token=${encodeURIComponent(window.currentToken)}`);
-            if (!res.ok) throw new Error("Failed to load guerrilla message content");
+            const parts = window.currentEmail.split('@');
+            const login = parts[0];
+            const domain = parts[1];
+
+            const res = await fetch(`${API_BASE}/messages?login=${encodeURIComponent(login)}&domain=${encodeURIComponent(domain)}&id=${encodeURIComponent(id)}`);
+            if (!res.ok) throw new Error("Failed to load 1secmail message content");
+
             const msg = await res.json();
 
-            if (modalSubject) modalSubject.innerText = msg.mail_subject || 'No Subject';
-            if (modalSender) modalSender.innerText = `From: ${msg.mail_from || 'Unknown'}`;
+            if (modalSubject) modalSubject.innerText = msg.subject || 'No Subject';
+            if (modalSender) modalSender.innerText = `From: ${msg.from || 'Unknown'}`;
 
             if (modalBody) {
-                if (msg.mail_body) {
-                    let content = msg.mail_body;
-                    if (content.includes('<') && content.includes('>')) {
-                        let fixedHtml = content.replace(/<a\s+([^>]*\s+)?href=/gi, '<a target="_blank" $1 href=');
-                        modalBody.innerHTML = `<iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" srcdoc="${fixedHtml.replace(/"/g, '&quot;')}" class="w-full h-72 bg-white rounded-lg border-0"></iframe>`;
-                    } else {
-                        let text = escapeHtml(content);
-                        let linkedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" class="text-blue-400 underline font-semibold">$1</a>');
-                        modalBody.innerHTML = `<div class="whitespace-pre-wrap text-sm text-slate-200">${linkedText}</div>`;
-                    }
+                if (msg.htmlBody) {
+                    let fixedHtml = msg.htmlBody.replace(/<a\s+([^>]*\s+)?href=/gi, '<a target="_blank" $1 href=');
+                    modalBody.innerHTML = `<iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" srcdoc="${fixedHtml.replace(/"/g, '&quot;')}" class="w-full h-72 bg-white rounded-lg border-0"></iframe>`;
+                } else if (msg.textBody || msg.body) {
+                    let text = escapeHtml(msg.textBody || msg.body);
+                    let linkedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" class="text-blue-400 underline font-semibold">$1</a>');
+                    modalBody.innerHTML = `<div class="whitespace-pre-wrap text-sm text-slate-200">${linkedText}</div>`;
                 } else {
                     modalBody.innerText = "No readable content found in message.";
                 }
             }
             return;
         } catch (err) {
-            console.error("Read Guerrilla Message Error:", err);
+            console.error("Read 1secmail Message Error:", err);
             if (modalBody) modalBody.innerText = "Error loading message body. Please try again.";
             return;
         }
@@ -537,7 +542,6 @@ function onDomainChange() {
     const select = document.getElementById('domainSelect');
     if (!select || !select.value) return;
 
-    // Check if current active email is already on selected domain
     if (window.currentEmail && window.currentEmail.endsWith('@' + select.value)) {
         return;
     }
@@ -547,27 +551,34 @@ function onDomainChange() {
 
 function switchDomain() {
     const select = document.getElementById('domainSelect');
-    if (!select) {
+    let domains = availableDomainsList.length > 0 ? availableDomainsList : FALLBACK_DOMAINS;
+
+    if (select && select.options && select.options.length > 0) {
+        const opts = [...select.options].map(opt => opt.value).filter(Boolean);
+        if (opts.length > 0) {
+            domains = opts;
+        }
+    }
+
+    if (domains.length === 0) {
         generateNewEmail();
         return;
     }
 
-    const options = [...select.options].map(opt => opt.value).filter(Boolean);
-    if (options.length === 0) {
-        generateNewEmail();
-        return;
-    }
-
-    let currentDomain = select.value;
+    let currentDomain = null;
     if (window.currentEmail && window.currentEmail.includes('@')) {
         currentDomain = window.currentEmail.split('@')[1];
+    } else if (select && select.value) {
+        currentDomain = select.value;
     }
 
-    let currentIndex = options.indexOf(currentDomain);
-    let nextIndex = (currentIndex + 1) % options.length;
-    let nextDomain = options[nextIndex];
+    let currentIndex = domains.indexOf(currentDomain);
+    let nextIndex = currentIndex >= 0 ? (currentIndex + 1) % domains.length : 0;
+    let nextDomain = domains[nextIndex];
 
-    select.value = nextDomain;
+    if (select) {
+        select.value = nextDomain;
+    }
     generateNewEmail(nextDomain);
 }
 
