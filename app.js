@@ -84,6 +84,24 @@ function removeItemSafe(key) {
     }
 }
 
+function parseEmailAddress(emailStr) {
+    if (!emailStr || typeof emailStr !== 'string') return null;
+    const trimmed = emailStr.trim().toLowerCase();
+    if (!trimmed.includes('@')) return null;
+
+    const parts = trimmed.split('@');
+    if (parts.length !== 2) return null;
+
+    const login = parts[0];
+    const domain = parts[1];
+
+    if (!login || !domain || login.includes('@') || domain.includes('@')) {
+        return null;
+    }
+
+    return { login, domain };
+}
+
 function generateCleanUsername() {
     const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
     let result = '';
@@ -112,10 +130,10 @@ async function populateDomainDropdown() {
 
         select.innerHTML = availableDomainsList.map(d => `<option value="${escapeHtml(d)}">@${escapeHtml(d)}</option>`).join('');
 
-        if (window.currentEmail && window.currentEmail.includes('@')) {
-            const currentDomain = window.currentEmail.split('@')[1];
-            if (availableDomainsList.includes(currentDomain)) {
-                select.value = currentDomain;
+        const parsed = parseEmailAddress(window.currentEmail);
+        if (parsed) {
+            if (availableDomainsList.includes(parsed.domain)) {
+                select.value = parsed.domain;
             }
         }
     } catch (e) {
@@ -137,24 +155,21 @@ async function initApp() {
 
         await populateDomainDropdown();
 
-        if (savedEmail && savedEmail.includes('@')) {
-            const parts = savedEmail.split('@');
-            const savedLogin = parts[0];
-            const savedDomain = parts[1];
-
-            if (savedDomain && !isCleanDomain(savedDomain)) {
+        const parsedSaved = parseEmailAddress(savedEmail);
+        if (parsedSaved) {
+            if (!isCleanDomain(parsedSaved.domain)) {
                 console.warn("Saved email domain is blacklisted. Purging saved session...");
                 clearSession();
             } else {
-                window.currentEmail = savedEmail;
-                window.currentProvider = savedProvider || (savedDomain.includes('1secmail') ? '1secmail' : 'primary');
-                window.currentToken = savedToken || (window.currentProvider === '1secmail' ? `1secmail_${savedLogin}_${savedDomain}` : null);
-                emailDisplay.value = savedEmail;
+                window.currentEmail = savedEmail.trim().toLowerCase();
+                window.currentProvider = savedProvider || (parsedSaved.domain.includes('1secmail') ? '1secmail' : 'primary');
+                window.currentToken = savedToken || (window.currentProvider === '1secmail' ? `1secmail_${parsedSaved.login}_${parsedSaved.domain}` : null);
+                emailDisplay.value = window.currentEmail;
 
                 const select = document.getElementById('domainSelect');
-                if (select && savedDomain) {
-                    if ([...select.options].some(opt => opt.value === savedDomain)) {
-                        select.value = savedDomain;
+                if (select) {
+                    if ([...select.options].some(opt => opt.value === parsedSaved.domain)) {
+                        select.value = parsedSaved.domain;
                     }
                 }
 
@@ -350,11 +365,9 @@ async function generateNewEmail(preferredDomain = null) {
             if (availableDomainsList && availableDomainsList.length > 0) {
                 select.innerHTML = availableDomainsList.map(d => `<option value="${escapeHtml(d)}">@${escapeHtml(d)}</option>`).join('');
             }
-            if (createdAccount.email.includes('@')) {
-                const activeDom = createdAccount.email.split('@')[1];
-                if ([...select.options].some(opt => opt.value === activeDom)) {
-                    select.value = activeDom;
-                }
+            const parsedCreated = parseEmailAddress(createdAccount.email);
+            if (parsedCreated && [...select.options].some(opt => opt.value === parsedCreated.domain)) {
+                select.value = parsedCreated.domain;
             }
         }
 
@@ -382,9 +395,9 @@ let readMessageIds = new Set();
 
 function is1secmailProvider() {
     if (window.currentProvider === '1secmail') return true;
-    if (window.currentEmail && window.currentEmail.includes('@')) {
-        const domain = window.currentEmail.split('@')[1].toLowerCase();
-        return domain.includes('1secmail');
+    const parsed = parseEmailAddress(window.currentEmail);
+    if (parsed) {
+        return parsed.domain.includes('1secmail');
     }
     return false;
 }
@@ -433,14 +446,19 @@ function markMessageRead(id) {
 
 async function fetchMessages() {
     if (!window.currentEmail) return false;
+
+    // Strict Email Address Splitting
+    const parsedEmail = parseEmailAddress(window.currentEmail);
+    if (!parsedEmail) {
+        console.warn("Invalid or missing current email address, skipping API request.");
+        return false;
+    }
+
+    const { login, domain } = parsedEmail;
     loadReadState();
 
     if (is1secmailProvider()) {
         try {
-            const parts = window.currentEmail.split('@');
-            const login = parts[0];
-            const domain = parts[1];
-
             const res = await fetch(`${API_BASE}/messages?login=${encodeURIComponent(login)}&domain=${encodeURIComponent(domain)}`);
             if (!res.ok) return false;
             const data = await res.json();
@@ -449,7 +467,7 @@ async function fetchMessages() {
                 id: item.id,
                 from: { name: item.from, address: item.from },
                 subject: item.subject,
-                intro: '',
+                intro: item.intro || '',
                 createdAt: parseMessageDate(item.date)
             }));
             renderInbox(messages);
@@ -551,12 +569,16 @@ async function readMessage(id) {
     modal.classList.remove('hidden');
 
     if (is1secmailProvider()) {
-        try {
-            const parts = window.currentEmail.split('@');
-            const login = parts[0];
-            const domain = parts[1];
+        const parsedEmail = parseEmailAddress(window.currentEmail);
+        if (!parsedEmail) {
+            if (modalBody) modalBody.innerText = "Error: Invalid active email address.";
+            return;
+        }
 
-            const res = await fetch(`${API_BASE}/messages?login=${encodeURIComponent(login)}&domain=${encodeURIComponent(domain)}&id=${encodeURIComponent(id)}`);
+        const { login, domain } = parsedEmail;
+
+        try {
+            const res = await fetch(`${API_BASE}/read-message?login=${encodeURIComponent(login)}&domain=${encodeURIComponent(domain)}&id=${encodeURIComponent(id)}`);
             if (!res.ok) throw new Error("Failed to load message content");
 
             const msg = await res.json();
@@ -643,8 +665,9 @@ function switchDomain() {
     }
 
     let currentDomain = null;
-    if (window.currentEmail && window.currentEmail.includes('@')) {
-        currentDomain = window.currentEmail.split('@')[1];
+    const parsedCurrent = parseEmailAddress(window.currentEmail);
+    if (parsedCurrent) {
+        currentDomain = parsedCurrent.domain;
     } else if (select && select.value) {
         currentDomain = select.value;
     }
