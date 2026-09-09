@@ -1,8 +1,27 @@
 const API_BASE = 'https://api.mail.tm';
+const FALLBACK_DOMAINS = ['uberip.com', 'mail.tm', 'mail.gw'];
+
+let isGenerating = false;
 
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
+
+async function fetchWithTimeout(url, options = {}, timeoutMs = 6000) {
+    const controller = new AbortController();
+    const id = setTimeout(() => controller.abort(), timeoutMs);
+    try {
+        const response = await fetch(url, {
+            ...options,
+            signal: controller.signal
+        });
+        clearTimeout(id);
+        return response;
+    } catch (err) {
+        clearTimeout(id);
+        throw err;
+    }
+}
 
 function isLocalStorageAvailable() {
     try {
@@ -83,72 +102,123 @@ function clearSession() {
     removeItemSafe('nixinbox_token');
 }
 
+async function fetchDomains() {
+    let domainNames = [];
+    let retries = 2;
+
+    while (retries > 0) {
+        try {
+            const res = await fetchWithTimeout(`${API_BASE}/domains`, {
+                headers: { 'Accept': 'application/json' }
+            }, 5000);
+
+            if (res.ok) {
+                const data = await res.json();
+                const rawList = data['hydra:member'] || (Array.isArray(data) ? data : (data.domains || []));
+
+                if (Array.isArray(rawList) && rawList.length > 0) {
+                    domainNames = rawList
+                        .filter(item => item && (item.isActive === undefined || item.isActive === true))
+                        .map(item => (typeof item === 'string' ? item : item.domain))
+                        .filter(Boolean);
+                }
+
+                if (domainNames.length > 0) {
+                    return domainNames;
+                }
+            }
+        } catch (e) {
+            console.warn(`Fetch domains attempt failed (${retries - 1} retries remaining):`, e);
+        }
+        retries--;
+        if (retries > 0) await new Promise(res => setTimeout(res, 800));
+    }
+
+    console.warn("Using fallback domains list...");
+    return FALLBACK_DOMAINS;
+}
+
 async function generateNewEmail() {
+    if (isGenerating) return;
+    isGenerating = true;
+
     const emailDisplay = document.getElementById('emailDisplay');
     if (emailDisplay) emailDisplay.value = "Fetching domains...";
 
     clearSession();
 
-    let domains = null;
-    let retries = 3;
-    while (retries > 0) {
-        try {
-            const domainRes = await fetch(`${API_BASE}/domains`);
-            if (domainRes.ok) {
-                const domainData = await domainRes.json();
-                domains = domainData['hydra:member'] || domainData;
-                if (domains && domains.length > 0) break;
-            }
-        } catch (e) {
-            console.warn(`Fetch domains attempt failed (${retries} left):`, e);
-        }
-        retries--;
-        if (retries > 0) await new Promise(res => setTimeout(res, 1000));
-    }
-
-    if (!domains || domains.length === 0) {
-        if (emailDisplay) emailDisplay.value = "Error: Domains unavailable. Click New.";
-        return;
-    }
-
     try {
-        const domainObj = domains[Math.floor(Math.random() * domains.length)];
-        const domain = domainObj.domain;
-        const username = 'nix_' + Math.random().toString(36).substring(2, 8);
-        const address = `${username}@${domain}`;
-        const password = 'NixPass@' + Math.random().toString(36).substring(2, 8);
+        let domainList = await fetchDomains();
 
-        if (emailDisplay) emailDisplay.value = "Creating account...";
-        const accRes = await fetch(`${API_BASE}/accounts`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ address, password })
-        });
-
-        if (!accRes.ok) {
-            const errJson = await accRes.json().catch(() => ({}));
-            throw new Error(errJson.message || "Account creation failed (" + accRes.status + ")");
+        if (!domainList || domainList.length === 0) {
+            domainList = FALLBACK_DOMAINS;
         }
 
-        if (emailDisplay) emailDisplay.value = "Authenticating...";
-        const tokenRes = await fetch(`${API_BASE}/token`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ address, password })
-        });
+        // Shuffle candidate domains to try
+        const shuffledDomains = [...domainList].sort(() => Math.random() - 0.5);
+        let createdAccount = null;
+        let lastError = null;
 
-        if (!tokenRes.ok) throw new Error("Token failed (" + tokenRes.status + ")");
-        const tokenData = await tokenRes.json();
+        for (const domain of shuffledDomains) {
+            try {
+                const username = 'nix_' + Math.random().toString(36).substring(2, 8);
+                const address = `${username}@${domain}`;
+                const password = 'NixPass@' + Math.random().toString(36).substring(2, 8);
 
-        if (!tokenData.token) throw new Error("Token missing in response");
+                if (emailDisplay) emailDisplay.value = "Creating account...";
 
-        window.currentToken = tokenData.token;
-        window.currentEmail = address;
+                const accRes = await fetchWithTimeout(`${API_BASE}/accounts`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ address, password })
+                }, 7000);
 
-        setItemSafe('nixinbox_email', address);
-        setItemSafe('nixinbox_token', tokenData.token);
+                if (!accRes.ok) {
+                    const errJson = await accRes.json().catch(() => ({}));
+                    throw new Error(errJson.message || `Account creation failed (${accRes.status})`);
+                }
 
-        if (emailDisplay) emailDisplay.value = address;
+                if (emailDisplay) emailDisplay.value = "Authenticating...";
+
+                const tokenRes = await fetchWithTimeout(`${API_BASE}/token`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Accept': 'application/json'
+                    },
+                    body: JSON.stringify({ address, password })
+                }, 7000);
+
+                if (!tokenRes.ok) throw new Error(`Token failed (${tokenRes.status})`);
+                const tokenData = await tokenRes.json();
+
+                if (!tokenData.token) throw new Error("Token missing in response");
+
+                createdAccount = {
+                    email: address,
+                    token: tokenData.token
+                };
+                break;
+            } catch (err) {
+                console.warn(`Failed creating email on domain ${domain}:`, err);
+                lastError = err;
+            }
+        }
+
+        if (!createdAccount) {
+            throw lastError || new Error("Failed to create temporary inbox on available domains");
+        }
+
+        window.currentToken = createdAccount.token;
+        window.currentEmail = createdAccount.email;
+
+        setItemSafe('nixinbox_email', createdAccount.email);
+        setItemSafe('nixinbox_token', createdAccount.token);
+
+        if (emailDisplay) emailDisplay.value = createdAccount.email;
 
         const inboxList = document.getElementById('inboxList');
         if (inboxList) {
@@ -163,6 +233,8 @@ async function generateNewEmail() {
     } catch (err) {
         console.error("Generator Error:", err);
         if (emailDisplay) emailDisplay.value = "Error: " + err.message + ". Click New.";
+    } finally {
+        isGenerating = false;
     }
 }
 
