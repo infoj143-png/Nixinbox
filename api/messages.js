@@ -31,20 +31,29 @@ export default async function handler(req, res) {
 
     let { login, domain, email, id } = req.query || {};
 
-    if ((!login || !domain) && email && email.includes('@')) {
-        const parts = email.split('@');
-        login = parts[0];
-        domain = parts[1];
+    if ((!login || !domain) && email && typeof email === 'string' && email.includes('@')) {
+        const parts = email.trim().toLowerCase().split('@');
+        if (parts.length === 2 && parts[0] && parts[1]) {
+            login = parts[0];
+            domain = parts[1];
+        }
     }
 
     // 1secmail proxy logic
     if (login && domain) {
+        const cleanLogin = String(login).trim().toLowerCase();
+        const cleanDomain = String(domain).trim().toLowerCase();
+
+        if (!cleanLogin || !cleanDomain || cleanLogin.includes('@') || cleanDomain.includes('@')) {
+            return res.status(400).json({ error: 'Invalid login or domain parameter' });
+        }
+
         try {
             let targetUrl;
             if (id) {
-                targetUrl = `https://www.1secmail.com/api/v1/?action=readMessage&login=${encodeURIComponent(login)}&domain=${encodeURIComponent(domain)}&id=${encodeURIComponent(id)}`;
+                targetUrl = `https://www.1secmail.com/api/v1/?action=readMessage&login=${encodeURIComponent(cleanLogin)}&domain=${encodeURIComponent(cleanDomain)}&id=${encodeURIComponent(id)}`;
             } else {
-                targetUrl = `https://www.1secmail.com/api/v1/?action=getMessages&login=${encodeURIComponent(login)}&domain=${encodeURIComponent(domain)}`;
+                targetUrl = `https://www.1secmail.com/api/v1/?action=getMessages&login=${encodeURIComponent(cleanLogin)}&domain=${encodeURIComponent(cleanDomain)}`;
             }
 
             const proxyRes = await fetchWithTimeout(targetUrl, {
@@ -65,7 +74,7 @@ export default async function handler(req, res) {
     // Mail.tm proxy logic
     const authHeader = req.headers.authorization || req.headers.Authorization;
     if (!authHeader) {
-        return res.status(401).json({ error: 'Authorization header missing' });
+        return res.status(401).json({ error: 'Authorization header missing or invalid query parameters' });
     }
 
     const targetUrl = id ? `${PRIMARY_API}/messages/${id}` : `${PRIMARY_API}/messages`;
