@@ -137,15 +137,18 @@ async function initApp() {
 
         await populateDomainDropdown();
 
-        if (savedEmail && savedToken) {
-            const savedDomain = savedEmail.includes('@') ? savedEmail.split('@')[1] : null;
+        if (savedEmail && savedEmail.includes('@')) {
+            const parts = savedEmail.split('@');
+            const savedLogin = parts[0];
+            const savedDomain = parts[1];
+
             if (savedDomain && !isCleanDomain(savedDomain)) {
                 console.warn("Saved email domain is blacklisted. Purging saved session...");
                 clearSession();
             } else {
-                window.currentToken = savedToken;
                 window.currentEmail = savedEmail;
-                window.currentProvider = savedProvider || 'primary';
+                window.currentProvider = savedProvider || (savedDomain.includes('1secmail') ? '1secmail' : 'primary');
+                window.currentToken = savedToken || (window.currentProvider === '1secmail' ? `1secmail_${savedLogin}_${savedDomain}` : null);
                 emailDisplay.value = savedEmail;
 
                 const select = document.getElementById('domainSelect');
@@ -155,14 +158,9 @@ async function initApp() {
                     }
                 }
 
-                const messagesOk = await fetchMessages();
-                if (messagesOk) {
-                    startPolling();
-                    return;
-                } else {
-                    console.warn("Saved session invalid or network fetch error. Resetting session...");
-                    clearSession();
-                }
+                await fetchMessages();
+                startPolling();
+                return;
             }
         }
 
@@ -170,8 +168,9 @@ async function initApp() {
 
     } catch (err) {
         console.error("Init Error:", err);
-        clearSession();
-        await generateWithRetry();
+        if (!getItemSafe('nixinbox_email')) {
+            await generateWithRetry();
+        }
     }
 }
 
@@ -486,7 +485,6 @@ async function fetchMessages() {
         return true;
     } catch (err) {
         console.error("Fetch Messages Error:", err);
-        clearSession();
         return false;
     }
 }
