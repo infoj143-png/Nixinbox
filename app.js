@@ -4,6 +4,44 @@ document.addEventListener('DOMContentLoaded', () => {
     initApp();
 });
 
+function isLocalStorageAvailable() {
+    try {
+        const testKey = '__nixinbox_test__';
+        localStorage.setItem(testKey, testKey);
+        localStorage.removeItem(testKey);
+        return true;
+    } catch (e) {
+        return false;
+    }
+}
+
+function getItemSafe(key) {
+    if (!isLocalStorageAvailable()) return null;
+    try {
+        return localStorage.getItem(key);
+    } catch (e) {
+        return null;
+    }
+}
+
+function setItemSafe(key, value) {
+    if (!isLocalStorageAvailable()) return;
+    try {
+        localStorage.setItem(key, value);
+    } catch (e) {
+        console.warn("localStorage setItem failed:", e);
+    }
+}
+
+function removeItemSafe(key) {
+    if (!isLocalStorageAvailable()) return;
+    try {
+        localStorage.removeItem(key);
+    } catch (e) {
+        console.warn("localStorage removeItem failed:", e);
+    }
+}
+
 async function initApp() {
     const emailDisplay = document.getElementById('emailDisplay');
     if (!emailDisplay) return;
@@ -12,38 +50,68 @@ async function initApp() {
         emailDisplay.value = "Initializing...";
 
         // Restore active session if present, else create new
-        const savedEmail = localStorage.getItem('nixinbox_email');
-        const savedToken = localStorage.getItem('nixinbox_token');
+        const savedEmail = getItemSafe('nixinbox_email');
+        const savedToken = getItemSafe('nixinbox_token');
 
         if (savedEmail && savedToken) {
             window.currentToken = savedToken;
             window.currentEmail = savedEmail;
             emailDisplay.value = savedEmail;
-            fetchMessages();
-            startPolling();
-            return;
+
+            const messagesOk = await fetchMessages();
+            if (messagesOk) {
+                startPolling();
+                return;
+            } else {
+                console.warn("Saved token invalid or expired. Resetting session...");
+                clearSession();
+            }
         }
 
         await generateNewEmail();
 
     } catch (err) {
         console.error("Init Error:", err);
-        emailDisplay.value = "ERROR: " + err.message;
+        emailDisplay.value = "ERROR: " + err.message + ". Click New.";
     }
+}
+
+function clearSession() {
+    window.currentToken = null;
+    window.currentEmail = null;
+    removeItemSafe('nixinbox_email');
+    removeItemSafe('nixinbox_token');
 }
 
 async function generateNewEmail() {
     const emailDisplay = document.getElementById('emailDisplay');
     if (emailDisplay) emailDisplay.value = "Fetching domains...";
 
+    clearSession();
+
+    let domains = null;
+    let retries = 3;
+    while (retries > 0) {
+        try {
+            const domainRes = await fetch(`${API_BASE}/domains`);
+            if (domainRes.ok) {
+                const domainData = await domainRes.json();
+                domains = domainData['hydra:member'] || domainData;
+                if (domains && domains.length > 0) break;
+            }
+        } catch (e) {
+            console.warn(`Fetch domains attempt failed (${retries} left):`, e);
+        }
+        retries--;
+        if (retries > 0) await new Promise(res => setTimeout(res, 1000));
+    }
+
+    if (!domains || domains.length === 0) {
+        if (emailDisplay) emailDisplay.value = "Error: Domains unavailable. Click New.";
+        return;
+    }
+
     try {
-        const domainRes = await fetch(`${API_BASE}/domains`);
-        if (!domainRes.ok) throw new Error("Domains API failed (" + domainRes.status + ")");
-
-        const domainData = await domainRes.json();
-        const domains = domainData['hydra:member'] || domainData;
-        if (!domains || domains.length === 0) throw new Error("No domains available");
-
         const domainObj = domains[Math.floor(Math.random() * domains.length)];
         const domain = domainObj.domain;
         const username = 'nix_' + Math.random().toString(36).substring(2, 8);
@@ -77,8 +145,8 @@ async function generateNewEmail() {
         window.currentToken = tokenData.token;
         window.currentEmail = address;
 
-        localStorage.setItem('nixinbox_email', address);
-        localStorage.setItem('nixinbox_token', tokenData.token);
+        setItemSafe('nixinbox_email', address);
+        setItemSafe('nixinbox_token', tokenData.token);
 
         if (emailDisplay) emailDisplay.value = address;
 
@@ -105,17 +173,23 @@ function startPolling() {
 }
 
 async function fetchMessages() {
-    if (!window.currentToken) return;
+    if (!window.currentToken) return false;
     try {
         const res = await fetch(`${API_BASE}/messages`, {
             headers: { 'Authorization': `Bearer ${window.currentToken}` }
         });
-        if (!res.ok) return;
+        if (res.status === 401 || res.status === 403) {
+            console.warn("Token expired or unauthorized");
+            return false;
+        }
+        if (!res.ok) return false;
         const data = await res.json();
         const messages = data['hydra:member'] || data;
         renderInbox(messages);
+        return true;
     } catch (err) {
         console.error("Fetch Messages Error:", err);
+        return false;
     }
 }
 
