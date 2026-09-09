@@ -1,7 +1,30 @@
 const API_BASE = '/api';
 const FALLBACK_DOMAINS = ['uberip.com', 'mail.tm', 'mail.gw'];
 
+const BLACKLISTED_KEYWORDS = [
+    'guerrillamail',
+    'mailinator',
+    'sharklasers',
+    'grr',
+    'pokemail',
+    'spam4',
+    'guerrillamailblock',
+    'trashmail',
+    'dispostable',
+    '10minutemail',
+    'yopmail',
+    'maildrop',
+    'tempmail'
+];
+
+function isCleanDomain(domain) {
+    if (!domain || typeof domain !== 'string') return false;
+    const lower = domain.toLowerCase();
+    return !BLACKLISTED_KEYWORDS.some(kw => lower.includes(kw));
+}
+
 let isGenerating = false;
+let availableDomainsList = [];
 
 document.addEventListener('DOMContentLoaded', () => {
     initApp();
@@ -79,6 +102,27 @@ function generateCleanPassword() {
     return 'Nix' + result + '1!';
 }
 
+async function populateDomainDropdown() {
+    const select = document.getElementById('domainSelect');
+    if (!select) return;
+
+    try {
+        const domains = await fetchDomains();
+        availableDomainsList = domains && domains.length > 0 ? domains : FALLBACK_DOMAINS;
+
+        select.innerHTML = availableDomainsList.map(d => `<option value="${escapeHtml(d)}">@${escapeHtml(d)}</option>`).join('');
+
+        if (window.currentEmail && window.currentEmail.includes('@')) {
+            const currentDomain = window.currentEmail.split('@')[1];
+            if (availableDomainsList.includes(currentDomain)) {
+                select.value = currentDomain;
+            }
+        }
+    } catch (e) {
+        console.warn("Failed to populate domain dropdown:", e);
+    }
+}
+
 async function initApp() {
     const emailDisplay = document.getElementById('emailDisplay');
     if (!emailDisplay) return;
@@ -91,11 +135,21 @@ async function initApp() {
         const savedToken = getItemSafe('nixinbox_token');
         const savedProvider = getItemSafe('nixinbox_provider');
 
+        await populateDomainDropdown();
+
         if (savedEmail && savedToken) {
             window.currentToken = savedToken;
             window.currentEmail = savedEmail;
             window.currentProvider = savedProvider || 'primary';
             emailDisplay.value = savedEmail;
+
+            const select = document.getElementById('domainSelect');
+            if (select && savedEmail.includes('@')) {
+                const savedDomain = savedEmail.split('@')[1];
+                if ([...select.options].some(opt => opt.value === savedDomain)) {
+                    select.value = savedDomain;
+                }
+            }
 
             const messagesOk = await fetchMessages();
             if (messagesOk) {
@@ -162,7 +216,10 @@ async function fetchDomains() {
                         .map(item => (typeof item === 'string' ? item : item.domain))
                         .filter(Boolean);
 
-                    if (domainNames.length > 0) {
+                    const cleanNames = domainNames.filter(isCleanDomain);
+                    if (cleanNames.length > 0) {
+                        return cleanNames;
+                    } else if (domainNames.length > 0) {
                         return domainNames;
                     }
                 }
@@ -178,7 +235,7 @@ async function fetchDomains() {
     return FALLBACK_DOMAINS;
 }
 
-async function generateNewEmail() {
+async function generateNewEmail(preferredDomain = null) {
     if (isGenerating) return;
     isGenerating = true;
 
@@ -194,12 +251,21 @@ async function generateNewEmail() {
             domainList = FALLBACK_DOMAINS;
         }
 
-        // Shuffle candidate domains to try
-        const shuffledDomains = [...domainList].sort(() => Math.random() - 0.5);
+        availableDomainsList = domainList;
+
+        // Build candidate list prioritizing preferredDomain if provided
+        let candidateDomains = [];
+        if (preferredDomain && domainList.includes(preferredDomain)) {
+            const others = domainList.filter(d => d !== preferredDomain).sort(() => Math.random() - 0.5);
+            candidateDomains = [preferredDomain, ...others];
+        } else {
+            candidateDomains = [...domainList].sort(() => Math.random() - 0.5);
+        }
+
         let createdAccount = null;
         let lastError = null;
 
-        for (const domain of shuffledDomains) {
+        for (const domain of candidateDomains) {
             try {
                 const username = generateCleanUsername();
                 const address = `${username}@${domain}`;
@@ -283,6 +349,18 @@ async function generateNewEmail() {
         setItemSafe('nixinbox_provider', window.currentProvider);
 
         if (emailDisplay) emailDisplay.value = createdAccount.email;
+
+        // Sync dropdown selection with created domain
+        const select = document.getElementById('domainSelect');
+        if (select) {
+            select.innerHTML = availableDomainsList.map(d => `<option value="${escapeHtml(d)}">@${escapeHtml(d)}</option>`).join('');
+            if (createdAccount.email.includes('@')) {
+                const activeDom = createdAccount.email.split('@')[1];
+                if ([...select.options].some(opt => opt.value === activeDom)) {
+                    select.value = activeDom;
+                }
+            }
+        }
 
         const inboxList = document.getElementById('inboxList');
         if (inboxList) {
@@ -453,6 +531,44 @@ async function readMessage(id) {
         console.error("Read Message Error:", err);
         if (modalBody) modalBody.innerText = "Error loading message body. Please try again.";
     }
+}
+
+function onDomainChange() {
+    const select = document.getElementById('domainSelect');
+    if (!select || !select.value) return;
+
+    // Check if current active email is already on selected domain
+    if (window.currentEmail && window.currentEmail.endsWith('@' + select.value)) {
+        return;
+    }
+
+    generateNewEmail(select.value);
+}
+
+function switchDomain() {
+    const select = document.getElementById('domainSelect');
+    if (!select) {
+        generateNewEmail();
+        return;
+    }
+
+    const options = [...select.options].map(opt => opt.value).filter(Boolean);
+    if (options.length === 0) {
+        generateNewEmail();
+        return;
+    }
+
+    let currentDomain = select.value;
+    if (window.currentEmail && window.currentEmail.includes('@')) {
+        currentDomain = window.currentEmail.split('@')[1];
+    }
+
+    let currentIndex = options.indexOf(currentDomain);
+    let nextIndex = (currentIndex + 1) % options.length;
+    let nextDomain = options[nextIndex];
+
+    select.value = nextDomain;
+    generateNewEmail(nextDomain);
 }
 
 function closeModal() {
