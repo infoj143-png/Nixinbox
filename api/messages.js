@@ -29,13 +29,39 @@ export default async function handler(req, res) {
         return res.status(405).json({ error: 'Method not allowed' });
     }
 
+    const { login, domain, id } = req.query || {};
+
+    // 1secmail proxy logic
+    if (login && domain) {
+        try {
+            let targetUrl;
+            if (id) {
+                targetUrl = `https://www.1secmail.com/api/v1/?action=readMessage&login=${encodeURIComponent(login)}&domain=${encodeURIComponent(domain)}&id=${encodeURIComponent(id)}`;
+            } else {
+                targetUrl = `https://www.1secmail.com/api/v1/?action=getMessages&login=${encodeURIComponent(login)}&domain=${encodeURIComponent(domain)}`;
+            }
+
+            const proxyRes = await fetchWithTimeout(targetUrl, {
+                headers: {
+                    'Accept': 'application/json',
+                    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+                }
+            }, 7000);
+
+            const data = await proxyRes.json().catch(() => ({}));
+            return res.status(proxyRes.status).json(data);
+        } catch (err) {
+            console.error('1secmail proxy error:', err.message);
+            return res.status(500).json({ error: err.message || 'Failed to fetch 1secmail messages' });
+        }
+    }
+
+    // Mail.tm proxy logic
     const authHeader = req.headers.authorization || req.headers.Authorization;
     if (!authHeader) {
         return res.status(401).json({ error: 'Authorization header missing' });
     }
 
-    // Support query parameter ?id=... or route URL /api/messages?id=...
-    const { id } = req.query || {};
     const targetUrl = id ? `${PRIMARY_API}/messages/${id}` : `${PRIMARY_API}/messages`;
 
     try {

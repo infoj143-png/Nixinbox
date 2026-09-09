@@ -1,6 +1,6 @@
 const PRIMARY_API = 'https://api.mail.tm';
 const SECONDARY_API = 'https://api.mail.gw';
-const FALLBACK_DOMAINS = ['uberip.com', 'mail.tm', 'mail.gw'];
+const FALLBACK_DOMAINS = ['1secmail.com', '1secmail.org', '1secmail.net'];
 
 const BLACKLISTED_KEYWORDS = [
     'guerrillamail',
@@ -101,7 +101,7 @@ export default async function handler(req, res) {
     let cleanDomains = domains.filter(isCleanDomain);
     if (cleanDomains.length > 0) {
         domains = cleanDomains;
-    } else if (!domains || domains.length === 0) {
+    } else {
         domains = FALLBACK_DOMAINS;
     }
 
