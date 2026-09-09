@@ -1,4 +1,4 @@
-const API_BASE = 'https://api.mail.tm';
+const API_BASE = '/api';
 const FALLBACK_DOMAINS = ['uberip.com', 'mail.tm', 'mail.gw'];
 
 let isGenerating = false;
@@ -82,7 +82,7 @@ async function initApp() {
                 startPolling();
                 return;
             } else {
-                console.warn("Saved token invalid or expired. Resetting session...");
+                console.warn("Saved session invalid or network fetch error. Resetting session...");
                 clearSession();
             }
         }
@@ -91,7 +91,8 @@ async function initApp() {
 
     } catch (err) {
         console.error("Init Error:", err);
-        emailDisplay.value = "ERROR: " + err.message + ". Click New.";
+        clearSession();
+        if (emailDisplay) emailDisplay.value = "Error: " + err.message + ". Click New.";
     }
 }
 
@@ -103,7 +104,6 @@ function clearSession() {
 }
 
 async function fetchDomains() {
-    let domainNames = [];
     let retries = 2;
 
     while (retries > 0) {
@@ -114,17 +114,17 @@ async function fetchDomains() {
 
             if (res.ok) {
                 const data = await res.json();
-                const rawList = data['hydra:member'] || (Array.isArray(data) ? data : (data.domains || []));
+                const rawList = data.domains || data['hydra:member'] || (Array.isArray(data) ? data : []);
 
                 if (Array.isArray(rawList) && rawList.length > 0) {
-                    domainNames = rawList
+                    const domainNames = rawList
                         .filter(item => item && (item.isActive === undefined || item.isActive === true))
                         .map(item => (typeof item === 'string' ? item : item.domain))
                         .filter(Boolean);
-                }
 
-                if (domainNames.length > 0) {
-                    return domainNames;
+                    if (domainNames.length > 0) {
+                        return domainNames;
+                    }
                 }
             }
         } catch (e) {
@@ -178,7 +178,7 @@ async function generateNewEmail() {
 
                 if (!accRes.ok) {
                     const errJson = await accRes.json().catch(() => ({}));
-                    throw new Error(errJson.message || `Account creation failed (${accRes.status})`);
+                    throw new Error(errJson.message || errJson.error || `Account creation failed (${accRes.status})`);
                 }
 
                 if (emailDisplay) emailDisplay.value = "Authenticating...";
@@ -232,6 +232,7 @@ async function generateNewEmail() {
 
     } catch (err) {
         console.error("Generator Error:", err);
+        clearSession();
         if (emailDisplay) emailDisplay.value = "Error: " + err.message + ". Click New.";
     } finally {
         isGenerating = false;
@@ -252,15 +253,17 @@ async function fetchMessages() {
         });
         if (res.status === 401 || res.status === 403) {
             console.warn("Token expired or unauthorized");
+            clearSession();
             return false;
         }
         if (!res.ok) return false;
         const data = await res.json();
-        const messages = data['hydra:member'] || data;
+        const messages = data['hydra:member'] || (Array.isArray(data) ? data : (data.messages || []));
         renderInbox(messages);
         return true;
     } catch (err) {
         console.error("Fetch Messages Error:", err);
+        clearSession();
         return false;
     }
 }
@@ -304,7 +307,7 @@ async function readMessage(id) {
     modal.classList.remove('hidden');
 
     try {
-        const res = await fetch(`${API_BASE}/messages/${id}`, {
+        const res = await fetch(`${API_BASE}/messages?id=${encodeURIComponent(id)}`, {
             headers: { 'Authorization': `Bearer ${window.currentToken}` }
         });
 
