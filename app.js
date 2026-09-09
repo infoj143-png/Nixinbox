@@ -61,6 +61,24 @@ function removeItemSafe(key) {
     }
 }
 
+function generateCleanUsername() {
+    const chars = 'abcdefghijklmnopqrstuvwxyz0123456789';
+    let result = '';
+    for (let i = 0; i < 8; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return 'nix' + result;
+}
+
+function generateCleanPassword() {
+    const chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+    let result = '';
+    for (let i = 0; i < 10; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return 'Nix' + result + '1!';
+}
+
 async function initApp() {
     const emailDisplay = document.getElementById('emailDisplay');
     if (!emailDisplay) return;
@@ -71,10 +89,12 @@ async function initApp() {
         // Restore active session if present, else create new
         const savedEmail = getItemSafe('nixinbox_email');
         const savedToken = getItemSafe('nixinbox_token');
+        const savedProvider = getItemSafe('nixinbox_provider');
 
         if (savedEmail && savedToken) {
             window.currentToken = savedToken;
             window.currentEmail = savedEmail;
+            window.currentProvider = savedProvider || 'primary';
             emailDisplay.value = savedEmail;
 
             const messagesOk = await fetchMessages();
@@ -87,20 +107,40 @@ async function initApp() {
             }
         }
 
-        await generateNewEmail();
+        await generateWithRetry();
 
     } catch (err) {
         console.error("Init Error:", err);
         clearSession();
-        if (emailDisplay) emailDisplay.value = "Error: " + err.message + ". Click New.";
+        await generateWithRetry();
+    }
+}
+
+async function generateWithRetry(maxRetries = 3) {
+    const emailDisplay = document.getElementById('emailDisplay');
+    for (let attempt = 1; attempt <= maxRetries; attempt++) {
+        if (emailDisplay) emailDisplay.value = "Generating inbox...";
+        try {
+            await generateNewEmail();
+            if (window.currentEmail && window.currentToken) {
+                return;
+            }
+        } catch (err) {
+            console.warn(`Email generation attempt ${attempt} failed:`, err);
+            if (attempt < maxRetries) {
+                await new Promise(r => setTimeout(r, 1000));
+            }
+        }
     }
 }
 
 function clearSession() {
     window.currentToken = null;
     window.currentEmail = null;
+    window.currentProvider = null;
     removeItemSafe('nixinbox_email');
     removeItemSafe('nixinbox_token');
+    removeItemSafe('nixinbox_provider');
 }
 
 async function fetchDomains() {
@@ -161,9 +201,9 @@ async function generateNewEmail() {
 
         for (const domain of shuffledDomains) {
             try {
-                const username = 'nix_' + Math.random().toString(36).substring(2, 8);
+                const username = generateCleanUsername();
                 const address = `${username}@${domain}`;
-                const password = 'NixPass@' + Math.random().toString(36).substring(2, 8);
+                const password = generateCleanPassword();
 
                 if (emailDisplay) emailDisplay.value = "Creating account...";
 
@@ -199,12 +239,34 @@ async function generateNewEmail() {
 
                 createdAccount = {
                     email: address,
-                    token: tokenData.token
+                    token: tokenData.token,
+                    provider: 'primary'
                 };
                 break;
             } catch (err) {
                 console.warn(`Failed creating email on domain ${domain}:`, err);
                 lastError = err;
+            }
+        }
+
+        // Secondary provider fallback (Guerrilla Mail) if all primary domains failed
+        if (!createdAccount) {
+            console.warn("Primary account creation failed across all domains. Attempting fallback provider...");
+            try {
+                if (emailDisplay) emailDisplay.value = "Creating inbox...";
+                const fallbackRes = await fetchWithTimeout('https://api.guerrillamail.com/ajax.php?f=get_email_address', {}, 7000);
+                if (fallbackRes.ok) {
+                    const gData = await fallbackRes.json();
+                    if (gData && gData.email_addr && gData.sid_token) {
+                        createdAccount = {
+                            email: gData.email_addr,
+                            token: gData.sid_token,
+                            provider: 'guerrillamail'
+                        };
+                    }
+                }
+            } catch (gErr) {
+                console.warn("Fallback provider creation failed:", gErr);
             }
         }
 
@@ -214,9 +276,11 @@ async function generateNewEmail() {
 
         window.currentToken = createdAccount.token;
         window.currentEmail = createdAccount.email;
+        window.currentProvider = createdAccount.provider || 'primary';
 
         setItemSafe('nixinbox_email', createdAccount.email);
         setItemSafe('nixinbox_token', createdAccount.token);
+        setItemSafe('nixinbox_provider', window.currentProvider);
 
         if (emailDisplay) emailDisplay.value = createdAccount.email;
 
@@ -247,6 +311,28 @@ function startPolling() {
 
 async function fetchMessages() {
     if (!window.currentToken) return false;
+
+    if (window.currentProvider === 'guerrillamail') {
+        try {
+            const res = await fetch(`https://api.guerrillamail.com/ajax.php?f=check_email&seq=0&sid_token=${encodeURIComponent(window.currentToken)}`);
+            if (!res.ok) return false;
+            const data = await res.json();
+            const rawList = data.list || [];
+            const messages = rawList.map(item => ({
+                id: item.mail_id,
+                from: { name: item.mail_from, address: item.mail_from },
+                subject: item.mail_subject,
+                intro: item.mail_excerpt,
+                createdAt: item.mail_timestamp ? new Date(item.mail_timestamp * 1000).toISOString() : new Date().toISOString()
+            }));
+            renderInbox(messages);
+            return true;
+        } catch (err) {
+            console.error("Fetch Guerrilla Messages Error:", err);
+            return false;
+        }
+    }
+
     try {
         const res = await fetch(`${API_BASE}/messages`, {
             headers: { 'Authorization': `Bearer ${window.currentToken}` }
@@ -305,6 +391,38 @@ async function readMessage(id) {
     if (modalBody) modalBody.innerText = "Fetching full email content...";
 
     modal.classList.remove('hidden');
+
+    if (window.currentProvider === 'guerrillamail') {
+        try {
+            const res = await fetch(`https://api.guerrillamail.com/ajax.php?f=fetch_email&email_id=${encodeURIComponent(id)}&sid_token=${encodeURIComponent(window.currentToken)}`);
+            if (!res.ok) throw new Error("Failed to load guerrilla message content");
+            const msg = await res.json();
+
+            if (modalSubject) modalSubject.innerText = msg.mail_subject || 'No Subject';
+            if (modalSender) modalSender.innerText = `From: ${msg.mail_from || 'Unknown'}`;
+
+            if (modalBody) {
+                if (msg.mail_body) {
+                    let content = msg.mail_body;
+                    if (content.includes('<') && content.includes('>')) {
+                        let fixedHtml = content.replace(/<a\s+([^>]*\s+)?href=/gi, '<a target="_blank" $1 href=');
+                        modalBody.innerHTML = `<iframe sandbox="allow-scripts allow-popups allow-popups-to-escape-sandbox" srcdoc="${fixedHtml.replace(/"/g, '&quot;')}" class="w-full h-72 bg-white rounded-lg border-0"></iframe>`;
+                    } else {
+                        let text = escapeHtml(content);
+                        let linkedText = text.replace(/(https?:\/\/[^\s]+)/g, '<a href="$1" target="_blank" rel="noopener" class="text-blue-400 underline font-semibold">$1</a>');
+                        modalBody.innerHTML = `<div class="whitespace-pre-wrap text-sm text-slate-200">${linkedText}</div>`;
+                    }
+                } else {
+                    modalBody.innerText = "No readable content found in message.";
+                }
+            }
+            return;
+        } catch (err) {
+            console.error("Read Guerrilla Message Error:", err);
+            if (modalBody) modalBody.innerText = "Error loading message body. Please try again.";
+            return;
+        }
+    }
 
     try {
         const res = await fetch(`${API_BASE}/messages?id=${encodeURIComponent(id)}`, {
