@@ -2,6 +2,28 @@ const PRIMARY_API = 'https://api.mail.tm';
 const SECONDARY_API = 'https://api.mail.gw';
 const FALLBACK_DOMAINS = ['uberip.com', 'mail.tm', 'mail.gw'];
 
+const BLACKLISTED_KEYWORDS = [
+    'guerrillamail',
+    'mailinator',
+    'sharklasers',
+    'grr',
+    'pokemail',
+    'spam4',
+    'guerrillamailblock',
+    'trashmail',
+    'dispostable',
+    '10minutemail',
+    'yopmail',
+    'maildrop',
+    'tempmail'
+];
+
+function isCleanDomain(domain) {
+    if (!domain || typeof domain !== 'string') return false;
+    const lower = domain.toLowerCase();
+    return !BLACKLISTED_KEYWORDS.some(kw => lower.includes(kw));
+}
+
 async function fetchWithTimeout(url, options = {}, timeoutMs = 4000) {
     const controller = new AbortController();
     const id = setTimeout(() => controller.abort(), timeoutMs);
@@ -75,8 +97,11 @@ export default async function handler(req, res) {
         }
     }
 
-    // Fallback if both primary and secondary fail or return empty
-    if (!domains || domains.length === 0) {
+    // Filter out blacklisted/heavily blocked domains and prioritize clean domains
+    let cleanDomains = domains.filter(isCleanDomain);
+    if (cleanDomains.length > 0) {
+        domains = cleanDomains;
+    } else if (!domains || domains.length === 0) {
         domains = FALLBACK_DOMAINS;
     }
 
